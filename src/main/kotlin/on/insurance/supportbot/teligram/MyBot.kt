@@ -24,7 +24,7 @@ class MyBot(
     override fun getBotToken(): String = token
 
     override fun onUpdateReceived(update: Update) {
-        update.message?.run { botService.sendMassage(chatId,text) }
+        update.message?.run { botService.massage(update) }
     }
 
 
