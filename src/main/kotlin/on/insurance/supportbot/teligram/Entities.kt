@@ -19,24 +19,35 @@ open class BaseEntity(
 @Entity
 class Contact(
     @Column(unique = true, nullable = false) var phoneNumber: String,
-   @OneToOne var userId: User,
+    @OneToOne var userId: User,
     var userName: String
 ) : BaseEntity()
 
 @Entity
 class User(
-    var chatId:Long,
-    @Enumerated(EnumType.STRING) var botStep: BotStep=BotStep.START,
-    @Enumerated(EnumType.STRING) var language:Language= Language.UZ,
-    @Enumerated(EnumType.STRING) var role:Role = Role.USER,
-    var isActive:Boolean= true
+    var chatId: Long,
+    @Enumerated(EnumType.STRING) var botStep: BotStep = BotStep.START,
+    @Enumerated(EnumType.STRING) var language: Language = Language.UZ,
+    @Enumerated(EnumType.STRING) var role: Role = Role.USER,
+    var isActive: Boolean = true
 ) : BaseEntity()
 
 @Entity
 class Messege(
-    var chatId:Long,
-    @Enumerated(EnumType.STRING) var botStep: BotStep,
-    @Enumerated(EnumType.STRING) var language:Language,
-    @Enumerated(EnumType.STRING) var role:Role,
-    var isActive:Boolean= true
+    var chatId: Long,
+    @ManyToOne var userId: User,
+    @ManyToOne var groupId: Group,
+    @Enumerated(EnumType.STRING) var language: Language,
+    @Enumerated(EnumType.STRING) var role: Role,
+    var isActive: Boolean = true
+) : BaseEntity()
+
+
+@Entity
+class Group(
+    var chatId: Long,
+    @ManyToOne var userId: User,
+    @ManyToOne var operatorId: User,
+    @Enumerated(EnumType.STRING) var language: Language,
+    var isActive: Boolean = true
 ) : BaseEntity()
