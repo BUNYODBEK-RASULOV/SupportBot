@@ -1,6 +1,9 @@
 package on.insurance.supportbot
+import on.insurance.supportbot.teligram.User
 
-//fun Student.getFullName() = "$firstName $lastName $sureName"
+fun User.createUser(chatId:Long): User {
+    return User(chatId)
+}
 
 fun Boolean.ifTrue(run: () -> Unit) {
     if (this) run()
