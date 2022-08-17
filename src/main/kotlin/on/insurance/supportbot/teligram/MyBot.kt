@@ -19,8 +19,8 @@ class MyBot(): TelegramLongPollingBot() {
     override fun getBotToken(): String = token
 
     override fun onUpdateReceived(update: Update?) {
-        update!!.hasMessage()?.run { sendNotification(update.message.chatId,"salom") }
-
+        update!!.hasMessage().run { sendNotification(1017282415, update.message.text )}
+update!!.hasMessage()
     }
 
     private fun sendNotification(chatId: Long, responseText: String) {
