@@ -33,7 +33,7 @@ class User(
 ) : BaseEntity()
 
 @Entity
-class Messege(
+class Message(
     var chatId:Long,
     @Enumerated(EnumType.STRING) var botStep: BotStep,
     @Enumerated(EnumType.STRING) var language:Language,

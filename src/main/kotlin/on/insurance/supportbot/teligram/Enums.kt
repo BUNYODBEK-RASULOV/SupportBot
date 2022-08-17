@@ -1,7 +1,8 @@
 package on.insurance.supportbot.teligram
 
 enum class  BotStep{
-    START
+    START,
+    CONTACT,
 
 }
 enum class  Language{

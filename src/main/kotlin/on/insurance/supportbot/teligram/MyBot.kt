@@ -1,13 +1,18 @@
 package on.insurance.supportbot.teligram
 
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Update
+import javax.ws.rs.ext.ParamConverter
 
 @Service
-class MyBot(): TelegramLongPollingBot() {
+class MyBot(
+    @Lazy
+    val botService: BotService
+): TelegramLongPollingBot() {
 
     @Value("\${telegram.botName}")
     private val botName: String=""
@@ -18,14 +23,9 @@ class MyBot(): TelegramLongPollingBot() {
     override fun getBotUsername(): String = botName
     override fun getBotToken(): String = token
 
-    override fun onUpdateReceived(update: Update?) {
-        update!!.hasMessage().run { sendNotification(1017282415, update.message.text )}
-update!!.hasMessage()
+    override fun onUpdateReceived(update: Update) {
+        update.message?.run { botService.sendMassage(chatId,text) }
     }
 
-    private fun sendNotification(chatId: Long, responseText: String) {
-        val responseMessage = SendMessage(chatId.toString(), responseText)
-        responseMessage.enableMarkdown(true)
-        execute(responseMessage)
-    }
+
 }
