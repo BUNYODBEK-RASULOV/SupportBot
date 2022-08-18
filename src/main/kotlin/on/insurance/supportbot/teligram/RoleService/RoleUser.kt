@@ -2,10 +2,7 @@ package on.insurance.supportbot.teligram.RoleService
 
 import on.insurance.supportbot.GroupService
 import on.insurance.supportbot.MessageService
-import on.insurance.supportbot.teligram.BotService
-import on.insurance.supportbot.teligram.BotStep
-import on.insurance.supportbot.teligram.Role
-import on.insurance.supportbot.teligram.User
+import on.insurance.supportbot.teligram.*
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
 import org.telegram.telegrambots.meta.api.objects.Update
@@ -15,25 +12,39 @@ class RoleUser(
     @Lazy
     val botService: BotService,
     val groupService: GroupService,
-    var messageService:MessageService
+    val messageService:MessageService
 ) {
     lateinit var update: Update
     lateinit var user: User
+    lateinit var group:Group
 
     fun userFunc(updateFunc: Update,userFunc: User){
         update=updateFunc
         user=userFunc
+        group=groupService.getGroupByUserId(user)
+
 
         when(user.botStep){
             BotStep.CHAT->{
-                chat()
+                saveChat()
+                sendText()
             }
         }
     }
 
-    fun chat(){
-        val group=groupService.getGroupByUserId(user.id!!)
+    fun saveChat(){
+        val group=groupService.getGroupByUserId(user)
         val text=update.message.text
         messageService.creat(text,group,user)
+        botService.sendMassage(update.message.chatId,text)
+    }
+    fun sendText(){
+        var chatId:Long=0
+        var text:String=""
+        update.message?.run {
+            chatId=getChatId()
+            text=getText()
+        }
+        group.operator?.run { botService.sendMassage(chatId,text) }
     }
 }
