@@ -11,6 +11,8 @@ interface UserService {
     fun getUser(chatId: Long): User
     fun update(user: User)
     fun get(userId: Long): Group
+    fun backOperator(operator: User)
+    fun operatorIsActive(operator: User)
 }
 
 interface GroupService {
@@ -36,6 +38,7 @@ interface MessageService{
 
 interface ContactService{
     fun saveContact(phoneNumber:String,username:String,user: User)
+    fun checkContact(contact: Contact,user: User)
 }
 
 @Service
@@ -112,6 +115,15 @@ class UserServiceImpl(
         TODO("Not yet implemented")
     }
 
+    override fun backOperator(operator: User) {
+        operator.isActive=false
+        userRepository.save(operator)
+    }
+
+    override fun operatorIsActive(operator: User) {
+        operator.isActive=true
+        userRepository.save(operator)
+    }
 }
 
 @Service
@@ -119,6 +131,10 @@ class ContactServiceImpl(private val contactRepository: ContactRepository):Conta
     override fun saveContact(phoneNumber: String, username: String, user: User) {
             val contact= Contact(phoneNumber,user,username)
             contactRepository.save(contact)
+    }
+
+    override fun checkContact(contact: Contact, user: User) {
+
     }
 }
 
