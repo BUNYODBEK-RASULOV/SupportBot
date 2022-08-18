@@ -20,8 +20,25 @@ class BotService(
             chatId = message.chatId
             text = message.text
         }
+        println(chatId)
         var user = userService.getUser(chatId)
-        var botStep = BotStep.START
+        var botStep = user.botStep
+
+        when(botStep){
+            BotStep.START->{
+                sendMassage(chatId,"tilni tanlang")
+                user.botStep=BotStep.LANGUAGE
+                userService.update(user)
+            }
+            BotStep.LANGUAGE->{
+                sendMassage(chatId,"kontakni yuboring")
+                user.botStep=BotStep.CONTACT
+                userService.update(user)
+            }
+            BotStep.CONTACT->{
+                sendMassage(chatId,"raxmat")
+            }
+        }
 
     }
 

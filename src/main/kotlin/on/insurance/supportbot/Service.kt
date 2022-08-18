@@ -2,6 +2,7 @@ package on.insurance.supportbot
 
 import on.insurance.supportbot.teligram.Group
 import on.insurance.supportbot.teligram.User
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Service
 
@@ -12,39 +13,44 @@ interface UserService{
 }
 interface GroupService {
 
-    fun update(user: User): Group
-    fun getUser(userId: Long): Group
+    fun update(group: Group): Group
+    fun getGroupByUserId(userId: Long): Group
 
 }
 
 
 
-@Service
-class GroupServiceImpl(
-    private val groupRepository: GroupRepository,
-    private val userRepository: UserRepository,
-) : GroupService {
-    override fun update(user: User): Group {
-        TODO("Not yet implemented")
-    }
+//@Service
+//class GroupServiceImpl(
+//    val groupRepository: GroupRepository,
+//    val userRepository: UserRepository,
+//) : GroupService {
 
-    override fun getUser(userId: Long): Group {
-        return groupRepository.findByUserIdAndDeleted(userId).run { this }.createUser(userId)
-    }
-
-    fun Group.createUser(userId: Long): Group {
-        return groupRepository.save(Group(userRepository.findById(userId).get()))
-    }
+//    override fun update(group: Group): Group {
+//        return groupRepository.save(group)
+//    }
+//
+//    override fun getGroupByUserId(userId: Long): Group {
+//        return groupRepository.findByUserIdAndDeleted(userId).run { this }.createGroup(userId)
+//    }
+//
+//    fun Group.createGroup(userId: Long): Group {
+//        return groupRepository.save(Group(userRepository.findById(userId).get()))
+//    }
 
 
 @Service
 class UserServiceImpl(
-    private val userRepository: UserRepository,
+    private val userRepository: UserRepository
 ):UserService{
     override fun getUser(chatId: Long): User {
-        return userRepository.findByChatId(chatId).run { this }.createUser(chatId)
+        return userRepository.findByChatIdd(chatId)?.run { this }?:createUser(chatId)
     }
 
+
+    fun createUser(chatId:Long): User {
+        return userRepository.save(User(chatId))
+    }
     override fun update(user: User) {
         userRepository.save(user)
     }
@@ -54,4 +60,9 @@ class UserServiceImpl(
     }
 
 }
+
+fun main() {
+
+
 }
+
