@@ -50,6 +50,7 @@ interface GroupRepository : BaseRepository<Group>{
     fun  getOperator(language: Language): Group?
 }
 interface ContactRepository:BaseRepository<Contact>{
+
 }
 
 interface MessageRepository:BaseRepository<MessageEntity>{

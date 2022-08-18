@@ -1,9 +1,6 @@
 package on.insurance.supportbot
 
-import on.insurance.supportbot.teligram.Group
-import on.insurance.supportbot.teligram.Language
-import on.insurance.supportbot.teligram.MessageEntity
-import on.insurance.supportbot.teligram.User
+import on.insurance.supportbot.teligram.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.jpa.repository.Query
 import org.springframework.expression.spel.ast.Operator
@@ -19,7 +16,7 @@ interface UserService {
 interface GroupService {
     fun update(group: Group): Group
     fun getGroupByUserId(user: User): Group
-    fun connectOperator(operator: User):Group?
+    fun connectOperator(operator: User): Group?
 
 //    fun connectOperator(operator: User):Group
 //    operator= null
@@ -28,36 +25,38 @@ interface GroupService {
 //    order by date 1
 
 }
-interface MessageService{
-    fun creat(message: String,group: Group,user: User)
-    fun getUserMessage(user: User,group: Group):List<MessageEntity>
+
+interface MessageService {
+    fun creat(message: String, group: Group, user: User)
+    fun getUserMessage(user: User, group: Group): List<MessageEntity>
 //    order date, readed=false,
 //    kiyin readed=true qilib quyasizlar
 }
 
+interface ContactService {
+    fun saveContact(phoneNumber: String, username: String, user: User)
+}
+
 @Service
- class MessageServiceImpl(
-    val messageRepository:MessageRepository
-    ):MessageService{
+class MessageServiceImpl(
+    val messageRepository: MessageRepository
+) : MessageService {
     override fun creat(message: String, group: Group, user: User) {
-        messageRepository.save(MessageEntity(user,group,message,user.language))
+        messageRepository.save(MessageEntity(user, group, message, user.language))
     }
 
     override fun getUserMessage(user: User, group: Group): List<MessageEntity> {
-        val userId=user.id
-        val groupId=group.id
+        val userId = user.id
+        val groupId = group.id
         val messageEntityList = messageRepository.getUserMessage(userId!!, groupId!!)
-        val list= mutableListOf<MessageEntity>()
-        for (entity in messageEntityList){
-            entity.readed=true
+        val list = mutableListOf<MessageEntity>()
+        for (entity in messageEntityList) {
+            entity.readed = true
             list.add(entity)
         }
         return list
     }
 }
-
-
-
 
 @Service
 class GroupServiceImpl(
@@ -70,46 +69,49 @@ class GroupServiceImpl(
     }
 
     override fun getGroupByUserId(user: User): Group {
-    return groupRepository.findByUserIdAndNotDeleted(user.id!!).run { this } ?: createGroup(user)
+        return groupRepository.findByUserIdAndNotDeleted(user.id!!).run { this } ?: createGroup(user)
     }
 
     fun createGroup(user: User): Group {
-        return groupRepository.save(Group(user,null,user.language))
+        return groupRepository.save(Group(user, null, user.language))
     }
 
     override fun connectOperator(operator: User): Group? {
-        return  groupRepository.getOperator(operator.language)?:throw RuntimeException("bunday group yoq")
-    }
-
-
-
-
-
-
-
-    @Service
-    class UserServiceImpl(
-        private val userRepository: UserRepository
-    ) : UserService {
-        override fun getUser(chatId: Long): User {
-            return userRepository.findByChatIdd(chatId)?.run { this } ?: createUser(chatId)
-        }
-
-
-        fun createUser(chatId: Long): User {
-            return userRepository.save(User(chatId))
-        }
-
-        override fun update(user: User) {
-            userRepository.save(user)
-        }
-
-        override fun get(userId: Long): Group {
-            TODO("Not yet implemented")
-        }
-
+        return groupRepository.getOperator(operator.language) ?: throw RuntimeException("bunday group yoq")
     }
 }
 
+@Service
+class UserServiceImpl(
+    private val userRepository: UserRepository
+) : UserService {
+    override fun getUser(chatId: Long): User {
+        return userRepository.findByChatIdd(chatId)?.run { this } ?: createUser(chatId)
+    }
+
+
+    fun createUser(chatId: Long): User {
+        return userRepository.save(User(chatId))
+    }
+
+    override fun update(user: User) {
+        userRepository.save(user)
+    }
+
+    override fun get(userId: Long): Group {
+        TODO("Not yet implemented")
+    }
+
+}
+
+@Service
+class ContactServiceImpl(
+    private val contactRepository: ContactRepository
+):ContactService{
+    override fun saveContact(phoneNumber: String, username: String, user: User) {
+        val contact=Contact(phoneNumber,user,username)
+        contactRepository.save(contact)
+    }
+}
 
 
