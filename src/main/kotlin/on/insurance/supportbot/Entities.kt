@@ -19,7 +19,7 @@ open class BaseEntity(
 @Entity
 class Contact(
     @Column(unique = true, nullable = false) var phoneNumber: String,
-    @OneToOne var user: User,
+    @OneToOne var userId: User,
     var userName: String
 ) : BaseEntity()
 
@@ -34,9 +34,10 @@ class User(
 ) : BaseEntity()
 
 @Entity
-class MessageEntity(
-    @ManyToOne var user: User,
-    @ManyToOne var group: Group,
+class Message(
+
+    @ManyToOne var userId: User,
+    @ManyToOne var groupId: Group,
     var massages: String,
     @Enumerated(EnumType.STRING) var language: Language,
     var readed: Boolean = false,
@@ -46,8 +47,8 @@ class MessageEntity(
 
 @Entity(name = "groups")
 class Group(
-    @ManyToOne var user: User?=null,
-    @ManyToOne var operator: User? = null,
-    @Enumerated(EnumType.STRING) var language: Language?=null,
+    @ManyToOne var userId: User?=null,
+    @ManyToOne var operatorId: User? = null,
+    @Enumerated(EnumType.STRING) var language: Language=Language.UZ,
     var isActive: Boolean = true
 ) : BaseEntity()

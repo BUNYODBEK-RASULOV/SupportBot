@@ -41,11 +41,12 @@ class BaseRepositoryImpl<T : BaseEntity>(
 }
 
 interface UserRepository : BaseRepository<User> {
-        fun findByChatId(chatId:Long):User
+        @Query("select * from users u where u.chat_id = ?1",nativeQuery = true)
+        fun findByChatIdd(chatId:Long):User?
 }
 interface GroupRepository : BaseRepository<Group>{
-    @Query("select g from Group g where g.userId = ?1 and g.deleted = false")
-    fun  findByUserIdAndDeleted(userId:Long): Group
+    @Query("select * from groups g where g.userId = ?1 and g.deleted = false", nativeQuery = true)
+    fun  findByUserIdAndDeleted(userId:Long): Group?
 }
 interface ContactRepository:BaseRepository<Contact>{
 
