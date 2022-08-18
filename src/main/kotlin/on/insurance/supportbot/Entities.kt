@@ -47,8 +47,8 @@ class Message(
 
 @Entity(name = "groups")
 class Group(
-    @ManyToOne var userId: User?=null,
-    @ManyToOne var operatorId: User? = null,
+    @ManyToOne var user: User?=null,
+    @ManyToOne var operator: User? = null,
     @Enumerated(EnumType.STRING) var language: Language=Language.UZ,
     var isActive: Boolean = true
 ) : BaseEntity()
