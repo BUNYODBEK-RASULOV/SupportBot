@@ -117,8 +117,8 @@ class UserServiceImpl(
 @Service
 class ContactServiceImpl(private val contactRepository: ContactRepository):ContactService{
     override fun saveContact(phoneNumber: String, username: String, user: User) {
-            val contact= Contact(phoneNumber,user,username)
-            contactRepository.save(contact)
+            var contact= Contact(phoneNumber,user,username)
+             contact=contactRepository.save(contact)
     }
 }
 

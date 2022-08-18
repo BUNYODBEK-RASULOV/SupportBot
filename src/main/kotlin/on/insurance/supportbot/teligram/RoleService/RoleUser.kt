@@ -15,7 +15,8 @@ class RoleUser(
     @Lazy
     val botService: BotService,
     val groupService: GroupService,
-    val messageService: MessageService
+    val messageService: MessageService,
+    val roleOperator: RoleOperator,
 ) {
     lateinit var update: Update
     lateinit var user: User
@@ -47,25 +48,23 @@ class RoleUser(
             chatId = getChatId()
             text = getText()
         }
-        group.operator?.run { botService.sendMassage(this.chatId, text,menuButton("")) }
+        group.operator?.run { botService.sendMassage(this.chatId, text,roleOperator.menuButton("")) }
     }
 
-    fun menuButton(lang: String): ReplyKeyboardMarkup = ReplyKeyboardMarkup().apply {
+
+
+    fun queueButton(lang: String): ReplyKeyboardMarkup = ReplyKeyboardMarkup().apply {
         oneTimeKeyboard = true
         resizeKeyboard = true
         selective = false
         keyboard = mutableListOf(KeyboardRow(listOf(
             KeyboardButton().apply {
-                text = "yopish"
-            },
-            KeyboardButton().apply {
-                text = "chiqish"
+                text = "navbatingizni bilish"
+                requestContact = false
             }
         )))
 
     }
 
-    fun scanButton(text:String){
 
-    }
 }

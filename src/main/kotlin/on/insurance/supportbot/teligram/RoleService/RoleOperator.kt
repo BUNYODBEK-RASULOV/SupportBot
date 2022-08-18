@@ -20,6 +20,9 @@ class RoleOperator(
     val botService: BotService,
     val groupService: GroupService,
     val messageService: MessageService,
+    val userService: UserService,
+    @Lazy
+    val roleUser: RoleUser,
 ) {
     lateinit var update: Update
     lateinit var operator: User
@@ -28,16 +31,21 @@ class RoleOperator(
     fun operatorFunc(updateFunc: Update,userFunc: User){
         update = updateFunc
         operator = userFunc
-        //getGroupByOperatorId(operator:User) kerak
         group = groupService.getGroupByOperatorId(operator)
 
+        scanButton(update.message.text)
         when (operator.botStep) {
             BotStep.CHAT -> {
                 group.user?.run {
                     saveChat()
                     sendText() }
             }
+            BotStep.BACK->{
+                botService.sendMassage(update.message.chatId,"begin tugmasini bosing boshlash uchun",beginButton(""))
+            }
         }
+        userService.update(operator)
+
     }
 
     fun saveChat() {
@@ -52,17 +60,47 @@ class RoleOperator(
             chatId = getChatId()
             text = getText()
         }
-        group.user?.run { botService.sendMassage(this.chatId, text,queueButton("")) }
+        group.user?.run { botService.sendMassage(this.chatId, text,roleUser.queueButton("")) }
     }
 
-    fun queueButton(lang: String): ReplyKeyboardMarkup = ReplyKeyboardMarkup().apply {
+
+
+    fun scanButton(text:String){
+        when(text){
+            "yopish"->{
+                operator.botStep=BotStep.CLOSE
+            }
+            "chiqish"->{
+                operator.botStep=BotStep.BACK
+            }
+            "begin"->{
+                operator.botStep=BotStep.CHAT
+            }
+        }
+    }
+
+    fun menuButton(lang: String): ReplyKeyboardMarkup = ReplyKeyboardMarkup().apply {
         oneTimeKeyboard = true
         resizeKeyboard = true
         selective = false
         keyboard = mutableListOf(KeyboardRow(listOf(
             KeyboardButton().apply {
-                text = "navbatingizni bilish"
-                requestContact = false
+                text = "yopish"
+            },
+            KeyboardButton().apply {
+                text = "chiqish"
+            }
+        )))
+
+    }
+
+    fun beginButton(lang: String): ReplyKeyboardMarkup = ReplyKeyboardMarkup().apply {
+        oneTimeKeyboard = true
+        resizeKeyboard = true
+        selective = false
+        keyboard = mutableListOf(KeyboardRow(listOf(
+            KeyboardButton().apply {
+                text = "begin"
             }
         )))
 

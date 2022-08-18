@@ -7,6 +7,9 @@ enum class  BotStep{
     LANGUAGE,
     CONTACT,
     CHAT,
+    CLOSE,
+    BACK,
+    BEGIN,
 }
 enum class  Language{
     UZ, RU , ENG;

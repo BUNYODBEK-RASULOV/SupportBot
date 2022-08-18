@@ -1,6 +1,7 @@
 package on.insurance.supportbot.teligram
 
 
+import on.insurance.supportbot.ContactService
 import on.insurance.supportbot.UserService
 import on.insurance.supportbot.teligram.RoleService.RoleAdmin
 import on.insurance.supportbot.teligram.RoleService.RoleOperator
@@ -23,7 +24,8 @@ class BotService(
     val userService: UserService,
     val roleUser: RoleUser,
     val roleOperator: RoleOperator,
-    val roleAdmin: RoleAdmin
+    val roleAdmin: RoleAdmin,
+    val contactService: ContactService,
 ) {
 
      fun massage(update: Update) {
@@ -41,6 +43,7 @@ class BotService(
             }
             BotStep.CONTACT->{
                 val contact = update.message.contact
+                contactService.saveContact(contact.phoneNumber,contact.firstName,user)
                 sendMassage(chatId,"raxmat")
                 user.botStep=BotStep.CHAT
                 userService.update(user)
