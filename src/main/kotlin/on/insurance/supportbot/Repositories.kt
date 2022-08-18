@@ -45,7 +45,7 @@ interface UserRepository : BaseRepository<User> {
         fun findByChatIdd(chatId:Long):User?
 }
 interface GroupRepository : BaseRepository<Group>{
-    @Query("select * from groups g where g.userId = ?1 and g.deleted = false", nativeQuery = true)
+    @Query("select * from groups g where g.user_id = ?1 and g.deleted = false", nativeQuery = true)
     fun  findByUserIdAndDeleted(userId:Long): Group?
 }
 interface ContactRepository:BaseRepository<Contact>{
