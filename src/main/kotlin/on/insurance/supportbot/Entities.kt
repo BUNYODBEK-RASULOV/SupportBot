@@ -33,14 +33,14 @@ class User(
     var isActive: Boolean = true
 ) : BaseEntity()
 
-@Entity
-class Message(
+@Entity(name = "message")
+class MessageEntity(
     @ManyToOne var user: User,
     @ManyToOne var group: Group,
     var massages: String,
     @Enumerated(EnumType.STRING) var language: Language,
-    var readed: Boolean = false,
-    var isActive: Boolean = true
+    var readed: Boolean? = false,
+    var isActive: Boolean? = true
 ) : BaseEntity()
 
 
