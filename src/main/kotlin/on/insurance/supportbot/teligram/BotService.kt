@@ -1,6 +1,7 @@
 package on.insurance.supportbot.teligram
 
 
+import on.insurance.supportbot.ContactService
 import on.insurance.supportbot.UserService
 import on.insurance.supportbot.teligram.RoleService.RoleAdmin
 import on.insurance.supportbot.teligram.RoleService.RoleOperator
@@ -10,7 +11,10 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException
 
 
@@ -20,15 +24,14 @@ class BotService(
     val userService: UserService,
     val roleUser: RoleUser,
     val roleOperator: RoleOperator,
-    val roleAdmin: RoleAdmin
+    val roleAdmin: RoleAdmin,
+    val contactService: ContactService,
 ) {
 
      fun massage(update: Update) {
         var chatId: Long = 0
-        var text = ""
         update.run {
             chatId = message.chatId
-            text = message.text
         }
         var user = userService.getUser(chatId)
 
@@ -37,21 +40,26 @@ class BotService(
                 sendMassage(chatId,"tilni tanlang",languageButtons())
                 user.botStep=BotStep.LANGUAGE
                 userService.update(user)
-                return
             }
             BotStep.CONTACT->{
+                val contact = update.message.contact
+                contactService.saveContact(contact.phoneNumber,contact.firstName,user)
                 sendMassage(chatId,"raxmat")
                 user.botStep=BotStep.CHAT
                 userService.update(user)
             }
 
 
+
         }
 
         when(user.role){
-            Role.USER->{roleUser.userFunc(update,user)}
-            Role.OPERATOR ->{ roleOperator.operatorFunc(update, user)}
-            Role.ADMIN ->{ roleAdmin.adminFunc(update, user)}
+            Role.USER->{roleUser.userFunc(update,user)
+            return}
+            Role.OPERATOR ->{ roleOperator.operatorFunc(update, user)
+            return}
+            Role.ADMIN ->{ roleAdmin.adminFunc(update, user)
+            return}
         }
     }
 
@@ -69,11 +77,10 @@ class BotService(
 
             BotStep.LANGUAGE->{
                 myBot.deleteMassage(chatId,update)
-                sendMassage(chatId,"kontakni yuboring")
+                sendMassage(chatId,"contactizni yuboring",getContact(""))
                 user.botStep=BotStep.CONTACT
                 user.language= Language.valueOf(data)
                 userService.update(user)
-                return
             }
         }
     }
@@ -92,11 +99,16 @@ class BotService(
         myBot.execute(sendMessage) ?: throw TelegramApiException("xatolik")
     }
 
+    fun sendMassage(chatId: Long, text: String,replyKeyboardMarkup: ReplyKeyboardMarkup) {
+        val sendMessage = SendMessage(chatId.toString(), text)
+        sendMessage.replyMarkup=replyKeyboardMarkup
+        sendMessage.enableMarkdown(true)
+        myBot.execute(sendMessage) ?: throw TelegramApiException("xatolik")
+    }
+
     fun languageButtons():InlineKeyboardMarkup{
         val inlineKeyboardMarkup = InlineKeyboardMarkup()
-
         var keyboardButtons= mutableListOf<InlineKeyboardButton>()
-
         var buttons = listOf<Language>(Language.UZ, Language.RU, Language.ENG)
         buttons.forEach {
             val inlineKeyboardButton = InlineKeyboardButton()
@@ -108,5 +120,18 @@ class BotService(
         rowList.add(keyboardButtons)
         inlineKeyboardMarkup.setKeyboard(rowList);
         return inlineKeyboardMarkup
+    }
+
+    fun getContact(lang: String): ReplyKeyboardMarkup = ReplyKeyboardMarkup().apply {
+        oneTimeKeyboard = true
+        resizeKeyboard = true
+        selective = false
+        keyboard = mutableListOf(KeyboardRow(listOf(
+            KeyboardButton().apply {
+                text = "share contact"
+                requestContact = true
+            }
+        )))
+
     }
 }

@@ -37,25 +37,32 @@ class BaseRepositoryImpl<T : BaseEntity>(
         findById(id).orElseGet { null }?.run { if (!this.deleted) this else null }
 }
 
-
 interface UserRepository : BaseRepository<User> {
         @Query("select * from users u where u.chat_id = ?1",nativeQuery = true)
         fun findByChatIdd(chatId:Long):User?
 }
 interface GroupRepository : BaseRepository<Group>{
-    @Query("select * from groups g where g.user_id = ?1 and g.deleted = false", nativeQuery = true)
-    fun  findByUserIdAndDeleted(userId:Long): Group?
+    @Query("select * from groups g where g.user_id = ?1 and g.is_active = true ", nativeQuery = true)
+    fun  getGroupByUserIdAndActive(userId:Long): Group?
 
-    @Query("select * from groups g where g.operator_id = ?1 and g.deleted = false", nativeQuery = true)
-    fun  findByOperatorIdAndDeleted(operatorId:Long): Group?
+    @Query("select * from groups g where g.operator_id = ?1 and g.is_active = true", nativeQuery = true)
+    fun  getGroupByOperatorIdAndActive(operatorId:Long): Group?
 
     @Query("""select * from groups g where g.is_active=true and g.language=:language and
     g.operator_id is null and g.deleted = false order by created_date limit 1""", nativeQuery = true)
-    fun  getOperator(language: Language): Group?
+    fun  getGroupByOperatorAndLanguageAndActive(language: Language): Group?
+
+    @Query("""update  groups  set is_active=false, where operator_id=?1 and is_active=true""", nativeQuery = true)
+    fun deleteGroup(operatorId: Long)
+
+    fun findByOperatorId(operatorId: Long):Group?
 }
 interface ContactRepository:BaseRepository<Contact>{
+
 }
 
-interface MessageRepository:BaseRepository<MessageEntity>
-interface OperatorRepository:BaseRepository<Operator>
-
+interface MessageRepository:BaseRepository<MessageEntity>{
+    @Query("""select * from message m where m.readed=fale and m.user_id=:userId and 
+        m.group_id=:groupId order by created_date""", nativeQuery = true)
+    fun getUserMessage(userId:Long,groupId:Long):List<MessageEntity>
+}

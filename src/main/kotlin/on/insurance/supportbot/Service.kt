@@ -1,78 +1,94 @@
 package on.insurance.supportbot
 
-import on.insurance.supportbot.teligram.Group
-import on.insurance.supportbot.teligram.MessageEntity
-import on.insurance.supportbot.teligram.RoleService.*
-import on.insurance.supportbot.teligram.User
+import on.insurance.supportbot.teligram.*
 import org.springframework.stereotype.Service
 
 interface UserService {
     fun getUser(chatId: Long): User
     fun update(user: User)
     fun get(userId: Long): Group
+    fun backOperator(operator: User)
+    fun operatorIsActive(operator: User)
 }
 
 interface GroupService {
     fun update(group: Group): Group
-    fun getGroupByUserId(userId: Long): Group
-    fun getGroupByOperatorId(operatorId: Long): Group
-    fun connectOperator(operator: User): Group?
-
-
-}
-
-interface OperatorService {
-    fun create(dto: OperatorCreateDto)
-    fun update(id: Long, dto: OperatorUpdateDto)
-    fun get(id: Long): OperatorDto
-    fun delete(id: Long)
-    fun listOfOperator(): List<OperatorDto>
+    fun getGroupByUserId(user: User): Group
+    fun getNewGroupByOperator(operator: User):Group?
+    fun getGroupByOperatorId(operator:User): Group?
+    // groupni yopish
+    fun deleteGroupByOperator(operator: User)
 
 }
-
-interface MessageService {
-    fun creat(message: String, group: Group, user: User)
+interface MessageService{
+    fun creat(message: String,group: Group,user: User)
+    fun creat(message: String,group: Group,user: User,readed:Boolean)
+    fun getUserMessage(group: Group):List<MessageEntity>
+//    order date, readed=false,
+//    kiyin readed=true qilib quyasizlar
 }
 
+interface ContactService{
+    fun saveContact(phoneNumber:String,username:String,user: User)
+    fun checkContact(contact: Contact,user: User)
+}
 
 @Service
-class MessageServiceImpl(
-    val messageRepository: MessageRepository
-) : MessageService {
+ class MessageServiceImpl(
+    val messageRepository:MessageRepository
+    ):MessageService{
     override fun creat(message: String, group: Group, user: User) {
-        messageRepository.save(MessageEntity(user, group, message, user.language))
+        messageRepository.save(MessageEntity(user,group,message,user.language))
     }
 }
 
+    override fun creat(message: String, group: Group, user: User, readed: Boolean) {
+        messageRepository.save(MessageEntity(user,group,message,user.language,readed))
+    }
+
+    override fun getUserMessage(group: Group): List<MessageEntity> {
+        val groupId=group.id
+        val messageEntityList = messageRepository.getUserMessage(group.user!!.id!!, groupId!!)
+        val list= mutableListOf<MessageEntity>()
+        for (entity in messageEntityList){
+            entity.readed=true
+            list.add(entity)
+        }
+        messageRepository.saveAll(list)
+        return list
+    }
+}
 @Service
 class GroupServiceImpl(
     val groupRepository: GroupRepository,
     val userRepository: UserRepository,
 ) : GroupService {
+
     override fun update(group: Group): Group {
         return groupRepository.save(group)
     }
 
-    override fun getGroupByUserId(userId: Long): Group {
-        return groupRepository.findByUserIdAndDeleted(userId).run { this } ?: createGroup(userId)
-    }
-
-    override fun getGroupByOperatorId(operatorId: Long): Group {
-        return groupRepository.findByOperatorIdAndDeleted(operatorId).run { this } ?: Group()
+    override fun getGroupByUserId(user: User): Group {
+    return groupRepository.getGroupByUserIdAndActive(user.id!!).run { this } ?: createGroup(user)
     }
 
 
-    override fun connectOperator(operator: User): Group? {
-        return groupRepository.getOperator(operator.language) ?: throw RuntimeException("bunday group yoq")
+    fun createGroup(user: User): Group {
+        return groupRepository.save(Group(user,null,user.language))
+    }
+    override fun getGroupByOperatorId(operator: User): Group {
+        return groupRepository.getGroupByOperatorIdAndActive(operator.id!!).run { this } ?: Group(  )
     }
 
-    fun createGroup(userId: Long): Group {
-        return groupRepository.save(Group(userRepository.findById(userId).get()))
+
+    override fun getNewGroupByOperator(operator: User): Group? {
+       return  groupRepository.getGroupByOperatorAndLanguageAndActive(operator.language)?:throw RuntimeException("bunday group yoq")
     }
 
-
+    override fun deleteGroupByOperator(operator: User) {
+    groupRepository.deleteGroup(operator.id!!)
+    }
 }
-
 @Service
 class UserServiceImpl(
     private val userRepository: UserRepository
@@ -94,34 +110,28 @@ class UserServiceImpl(
         TODO("Not yet implemented")
     }
 
+    override fun backOperator(operator: User) {
+        operator.isActive=false
+        userRepository.save(operator)
+    }
+
+    override fun operatorIsActive(operator: User) {
+        operator.isActive=true
+        userRepository.save(operator)
+    }
 }
 
 @Service
-class OperatorServiceImpl(private val repository: OperatorRepository) : OperatorService {
-    override fun create(dto: OperatorCreateDto) {
-        repository.save(dto.toEntity())
+class ContactServiceImpl(private val contactRepository: ContactRepository):ContactService{
+    override fun saveContact(phoneNumber: String, username: String, user: User) {
+            var contact= Contact(phoneNumber,user,username)
+             contact=contactRepository.save(contact)
     }
 
-    override fun update(id: Long, dto: OperatorUpdateDto) {
-        val entity = repository.findByIdNotDeleted(id) ?:
-        throw NullPointerException("we have not this operator")
-        dto.run {
-            name?.run { entity.name = this }
-            phoneNumber?.run { entity.phoneNumber = this }
-            repository.save(entity)
-        }
+    override fun checkContact(contact: Contact, user: User) {
+
     }
-
-    override fun get(id: Long): OperatorDto =  repository.findByIdNotDeleted(id)?.run { OperatorDto.toDto(this) }
-        ?: throw NullPointerException("Couldn't find by id")
-
-
-    override fun delete(id: Long) {
-        repository.trash(id)
-    }
-
-    override fun listOfOperator()= repository.findAllNotDeleted().map(OperatorDto.Companion::toDto)
-
-
-
 }
+
+
+
