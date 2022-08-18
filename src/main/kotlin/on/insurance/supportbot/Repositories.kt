@@ -44,10 +44,16 @@ interface UserRepository : BaseRepository<User> {
 interface GroupRepository : BaseRepository<Group>{
     @Query("select * from groups g where g.user_id = ?1 and g.deleted = false ", nativeQuery = true)
     fun  findByUserIdAndNotDeleted(userId:Long): Group?
+
+    @Query("""select * from groups g where g.is_active=true and g.language=:language and
+    g.operator_id is null and g.deleted = false order by created_date limit 1""", nativeQuery = true)
+    fun  getOperator(language: Language): Group?
 }
 interface ContactRepository:BaseRepository<Contact>{
 }
 
 interface MessageRepository:BaseRepository<MessageEntity>{
-
+    @Query("""select * from message m where m.readed=fale and m.user_id=:userId and 
+        m.group_id=:groupId order by created_date""", nativeQuery = true)
+    fun getUserMessage(userId:Long,groupId:Long):List<MessageEntity>
 }
