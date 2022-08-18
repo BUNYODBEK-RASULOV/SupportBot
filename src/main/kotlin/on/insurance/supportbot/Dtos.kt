@@ -24,7 +24,7 @@ open class OperatorDto(
 
 ) {
     companion object {
-        fun toDto(entity: Operator) = entity.run { OperatorDto(id!!, name, phoneNumber) }
+        fun toDto(entity: Operator) = entity.run { OperatorDto(id!!,name,phoneNumber) }
     }
 }
 

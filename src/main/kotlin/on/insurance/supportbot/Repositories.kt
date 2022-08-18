@@ -37,6 +37,7 @@ class BaseRepositoryImpl<T : BaseEntity>(
         findById(id).orElseGet { null }?.run { if (!this.deleted) this else null }
 }
 
+
 interface UserRepository : BaseRepository<User> {
         @Query("select * from users u where u.chat_id = ?1",nativeQuery = true)
         fun findByChatIdd(chatId:Long):User?
@@ -65,4 +66,8 @@ interface MessageRepository:BaseRepository<MessageEntity>{
     @Query("""select * from message m where m.readed=fale and m.user_id=:userId and 
         m.group_id=:groupId order by created_date""", nativeQuery = true)
     fun getUserMessage(userId:Long,groupId:Long):List<MessageEntity>
+}
+
+interface OperatorRepository:BaseRepository<Operator>{
+
 }

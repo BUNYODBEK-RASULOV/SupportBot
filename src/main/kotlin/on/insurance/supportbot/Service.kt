@@ -1,7 +1,12 @@
 package on.insurance.supportbot
 
 import on.insurance.supportbot.teligram.*
+import on.insurance.supportbot.teligram.Contact
+import on.insurance.supportbot.teligram.Group
+import on.insurance.supportbot.teligram.MessageEntity
+import on.insurance.supportbot.teligram.User
 import org.springframework.stereotype.Service
+import javax.persistence.EntityManager
 
 interface UserService {
     fun getUser(chatId: Long): User
@@ -23,7 +28,7 @@ interface GroupService {
 interface MessageService{
     fun creat(message: String,group: Group,user: User)
     fun creat(message: String,group: Group,user: User,readed:Boolean)
-    fun getUserMessage(group: Group):List<MessageEntity>
+    fun getUserMessage(user: User,group: Group):List<MessageEntity>
 //    order date, readed=false,
 //    kiyin readed=true qilib quyasizlar
 }
@@ -31,6 +36,14 @@ interface MessageService{
 interface ContactService{
     fun saveContact(phoneNumber:String,username:String,user: User)
     fun checkContact(contact: Contact,user: User)
+}
+
+interface OperatorService {
+    fun create(dto: OperatorCreateDto)
+    fun update(id: Long, dto: OperatorUpdateDto)
+    fun get(id: Long): OperatorDto
+    fun delete(id: Long)
+    fun listOfOperator(): List<OperatorDto>
 }
 
 @Service
@@ -58,6 +71,10 @@ interface ContactService{
         return list
     }
 }
+=========
+}
+
+>>>>>>>>> Temporary merge branch 2
 @Service
 class GroupServiceImpl(
     val groupRepository: GroupRepository,
@@ -132,6 +149,49 @@ class ContactServiceImpl(private val contactRepository: ContactRepository):Conta
 
     }
 }
+
+
+
+class OperatorServiceImpl(
+    private val repository: OperatorRepository,
+    private val entity:EntityManager
+    ) : OperatorService {
+    override fun create(dto: OperatorCreateDto) {
+        repository.save(dto.toEntity())
+    }
+
+    override fun update(id: Long, dto: OperatorUpdateDto) {
+        val entity = repository.findByIdNotDeleted(id) ?: throw NullPointerException("we have not this operator")
+        dto.run {
+            name?.run { entity.name = this }
+            phoneNumber?.run { entity.phoneNumber = this }
+            repository.save(entity)
+        }
+    }
+
+    override fun get(id: Long): OperatorDto = repository.findByIdNotDeleted(id)?.run { OperatorDto.toDto(this) }
+        ?: throw NullPointerException("Couldn't find by id")
+
+
+    override fun delete(id: Long) {
+        repository.trash(id)
+    }
+
+    override fun listOfOperator()= repository.findAllNotDeleted().map(OperatorDto.Companion::toDto)
+}
+
+@Service
+class ContactServiceImpl(private val contactRepository: ContactRepository) : ContactService {
+    override fun saveContact(phoneNumber: String, username: String, user: User) {
+        val contact = Contact(phoneNumber, user, username)
+        contactRepository.save(contact)
+    }
+
+    override fun checkContact(contact: Contact, user: User) {
+
+    }
+}
+
 
 
 
