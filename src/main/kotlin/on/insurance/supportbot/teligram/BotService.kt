@@ -2,6 +2,9 @@ package on.insurance.supportbot.teligram
 
 
 import on.insurance.supportbot.UserService
+import on.insurance.supportbot.teligram.RoleService.RoleAdmin
+import on.insurance.supportbot.teligram.RoleService.RoleOperator
+import on.insurance.supportbot.teligram.RoleService.RoleUser
 import org.springframework.stereotype.Service
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
@@ -15,9 +18,12 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException
 class BotService(
     val myBot: MyBot,
     val userService: UserService,
+    val roleUser: RoleUser,
+    val roleOperator: RoleOperator,
+    val roleAdmin: RoleAdmin
 ) {
 
-    public fun massage(update: Update) {
+     fun massage(update: Update) {
         var chatId: Long = 0
         var text = ""
         update.run {
@@ -25,20 +31,28 @@ class BotService(
             text = message.text
         }
         var user = userService.getUser(chatId)
-        var botStep = user.botStep
 
-
-        when(botStep){
+        when(user.botStep){
             BotStep.START->{
                 sendMassage(chatId,"tilni tanlang",languageButtons())
                 user.botStep=BotStep.LANGUAGE
                 userService.update(user)
+                return
             }
             BotStep.CONTACT->{
                 sendMassage(chatId,"raxmat")
+                user.botStep=BotStep.CHAT
+                userService.update(user)
             }
+
+
         }
 
+        when(user.role){
+            Role.USER->{roleUser.userFunc(update,user)}
+            Role.OPERATOR ->{ roleOperator.operatorFunc(update, user)}
+            Role.ADMIN ->{ roleAdmin.adminFunc(update, user)}
+        }
     }
 
     fun inline(update: Update){
@@ -52,12 +66,14 @@ class BotService(
         var botStep = user.botStep
 
         when(botStep){
+
             BotStep.LANGUAGE->{
                 myBot.deleteMassage(chatId,update)
                 sendMassage(chatId,"kontakni yuboring")
                 user.botStep=BotStep.CONTACT
                 user.language= Language.valueOf(data)
                 userService.update(user)
+                return
             }
         }
     }
@@ -69,8 +85,6 @@ class BotService(
         sendMessage.enableMarkdown(true)
         myBot.execute(sendMessage) ?: throw TelegramApiException("xatolik")
     }
-
-
 
     fun sendMassage(chatId: Long, text: String) {
         val sendMessage = SendMessage(chatId.toString(), text)
