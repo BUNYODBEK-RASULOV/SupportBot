@@ -10,6 +10,9 @@ import on.insurance.supportbot.teligram.User
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
 import org.telegram.telegrambots.meta.api.objects.Update
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow
 
 @Service
 class RoleOperator(
@@ -26,7 +29,7 @@ class RoleOperator(
         update = updateFunc
         operator = userFunc
         //getGroupByOperatorId(operator:User) kerak
-        group = groupService.getGroupByUserId(operator)
+        group = groupService.getGroupByOperatorId(operator)
 
         when (operator.botStep) {
             BotStep.CHAT -> {
@@ -49,6 +52,19 @@ class RoleOperator(
             chatId = getChatId()
             text = getText()
         }
-        group.user?.run { botService.sendMassage(this.chatId, text) }
+        group.user?.run { botService.sendMassage(this.chatId, text,queueButton("")) }
+    }
+
+    fun queueButton(lang: String): ReplyKeyboardMarkup = ReplyKeyboardMarkup().apply {
+        oneTimeKeyboard = true
+        resizeKeyboard = true
+        selective = false
+        keyboard = mutableListOf(KeyboardRow(listOf(
+            KeyboardButton().apply {
+                text = "navbatingizni bilish"
+                requestContact = false
+            }
+        )))
+
     }
 }

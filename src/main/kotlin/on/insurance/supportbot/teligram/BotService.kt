@@ -10,7 +10,10 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException
 
 
@@ -25,10 +28,8 @@ class BotService(
 
      fun massage(update: Update) {
         var chatId: Long = 0
-        var text = ""
         update.run {
             chatId = message.chatId
-            text = message.text
         }
         var user = userService.getUser(chatId)
 
@@ -39,10 +40,12 @@ class BotService(
                 userService.update(user)
             }
             BotStep.CONTACT->{
+                val contact = update.message.contact
                 sendMassage(chatId,"raxmat")
                 user.botStep=BotStep.CHAT
                 userService.update(user)
             }
+
 
 
         }
@@ -71,7 +74,7 @@ class BotService(
 
             BotStep.LANGUAGE->{
                 myBot.deleteMassage(chatId,update)
-                sendMassage(chatId,"kontakni yuboring")
+                sendMassage(chatId,"contactizni yuboring",getContact(""))
                 user.botStep=BotStep.CONTACT
                 user.language= Language.valueOf(data)
                 userService.update(user)
@@ -93,11 +96,16 @@ class BotService(
         myBot.execute(sendMessage) ?: throw TelegramApiException("xatolik")
     }
 
+    fun sendMassage(chatId: Long, text: String,replyKeyboardMarkup: ReplyKeyboardMarkup) {
+        val sendMessage = SendMessage(chatId.toString(), text)
+        sendMessage.replyMarkup=replyKeyboardMarkup
+        sendMessage.enableMarkdown(true)
+        myBot.execute(sendMessage) ?: throw TelegramApiException("xatolik")
+    }
+
     fun languageButtons():InlineKeyboardMarkup{
         val inlineKeyboardMarkup = InlineKeyboardMarkup()
-
         var keyboardButtons= mutableListOf<InlineKeyboardButton>()
-
         var buttons = listOf<Language>(Language.UZ, Language.RU, Language.ENG)
         buttons.forEach {
             val inlineKeyboardButton = InlineKeyboardButton()
@@ -109,5 +117,18 @@ class BotService(
         rowList.add(keyboardButtons)
         inlineKeyboardMarkup.setKeyboard(rowList);
         return inlineKeyboardMarkup
+    }
+
+    fun getContact(lang: String): ReplyKeyboardMarkup = ReplyKeyboardMarkup().apply {
+        oneTimeKeyboard = true
+        resizeKeyboard = true
+        selective = false
+        keyboard = mutableListOf(KeyboardRow(listOf(
+            KeyboardButton().apply {
+                text = "share contact"
+                requestContact = true
+            }
+        )))
+
     }
 }

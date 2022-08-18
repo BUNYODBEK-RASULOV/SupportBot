@@ -6,6 +6,9 @@ import on.insurance.supportbot.teligram.*
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
 import org.telegram.telegrambots.meta.api.objects.Update
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow
 
 @Service
 class RoleUser(
@@ -44,6 +47,21 @@ class RoleUser(
             chatId = getChatId()
             text = getText()
         }
-        group.operator?.run { botService.sendMassage(this.chatId, text) }
+        group.operator?.run { botService.sendMassage(this.chatId, text,menuButton("")) }
+    }
+
+    fun menuButton(lang: String): ReplyKeyboardMarkup = ReplyKeyboardMarkup().apply {
+        oneTimeKeyboard = true
+        resizeKeyboard = true
+        selective = false
+        keyboard = mutableListOf(KeyboardRow(listOf(
+            KeyboardButton().apply {
+                text = "yopish"
+            },
+            KeyboardButton().apply {
+                text = "chiqish"
+            }
+        )))
+
     }
 }

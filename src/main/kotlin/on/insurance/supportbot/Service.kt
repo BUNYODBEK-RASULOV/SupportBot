@@ -20,6 +20,7 @@ interface GroupService {
     fun update(group: Group): Group
     fun getGroupByUserId(user: User): Group
     fun connectOperator(operator: User):Group?
+    fun getGroupByOperatorId(operator:User): Group
 
 //    fun connectOperator(operator: User):Group
 //    operator= null
@@ -61,10 +62,6 @@ interface MessageService{
         return list
     }
 }
-
-
-
-
 @Service
 class GroupServiceImpl(
     val groupRepository: GroupRepository,
@@ -83,8 +80,8 @@ class GroupServiceImpl(
     fun createGroup(user: User): Group {
         return groupRepository.save(Group(user,null,user.language))
     }
-    override fun getGroupByOperatorId(operatorId: Long): Group {
-        return groupRepository.findByOperatorIdAndDeleted(operatorId).run { this } ?: Group(  )
+    override fun getGroupByOperatorId(operator: User): Group {
+        return groupRepository.findByOperatorIdAndDeleted(operator.id!!).run { this } ?: Group(  )
     }
 
 
@@ -92,35 +89,28 @@ class GroupServiceImpl(
        return  groupRepository.getOperator(operator.language)?:throw RuntimeException("bunday group yoq")
     }
 
-
-
-
-
-
-
-
-    @Service
-    class UserServiceImpl(
-        private val userRepository: UserRepository
-    ) : UserService {
-        override fun getUser(chatId: Long): User {
-            return userRepository.findByChatIdd(chatId)?.run { this } ?: createUser(chatId)
-        }
-
-
-        fun createUser(chatId: Long): User {
-            return userRepository.save(User(chatId))
-        }
-
-        override fun update(user: User) {
-            userRepository.save(user)
-        }
-
-        override fun get(userId: Long): Group {
-            TODO("Not yet implemented")
-        }
-
+}
+@Service
+class UserServiceImpl(
+    private val userRepository: UserRepository
+) : UserService {
+    override fun getUser(chatId: Long): User {
+        return userRepository.findByChatIdd(chatId)?.run { this } ?: createUser(chatId)
     }
+
+
+    fun createUser(chatId: Long): User {
+        return userRepository.save(User(chatId))
+    }
+
+    override fun update(user: User) {
+        userRepository.save(user)
+    }
+
+    override fun get(userId: Long): Group {
+        TODO("Not yet implemented")
+    }
+
 }
 
 
