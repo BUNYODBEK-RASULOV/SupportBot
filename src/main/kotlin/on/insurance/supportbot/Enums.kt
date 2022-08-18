@@ -10,6 +10,7 @@ enum class  BotStep{
     CLOSE,
     BACK,
     BEGIN,
+    QUEUE,
 }
 enum class  Language{
     UZ, RU , ENG;

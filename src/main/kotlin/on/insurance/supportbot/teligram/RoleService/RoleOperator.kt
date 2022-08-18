@@ -43,6 +43,14 @@ class RoleOperator(
             BotStep.BACK->{
                 botService.sendMassage(update.message.chatId,"begin tugmasini bosing boshlash uchun",beginButton(""))
             }
+            BotStep.BEGIN->{
+                botService.sendMassage(update.message.chatId,"Siz activ holga utdingiz",menuButton(""))
+                operator.botStep=BotStep.CHAT
+            }
+            BotStep.CLOSE->{
+                botService.sendMassage(update.message.chatId,"Chat yangilandi",menuButton(""))
+                operator.botStep=BotStep.CHAT
+            }
         }
         userService.update(operator)
 
@@ -72,9 +80,11 @@ class RoleOperator(
             }
             "chiqish"->{
                 operator.botStep=BotStep.BACK
+                userService.backOperator(operator)
             }
             "begin"->{
-                operator.botStep=BotStep.CHAT
+                userService.operatorIsActive(operator)
+                operator.botStep=BotStep.BEGIN
             }
         }
     }
