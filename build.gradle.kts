@@ -25,7 +25,7 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.telegram:telegrambots-spring-boot-starter:5.4.0.1")
+    implementation("org.telegram:telegrambots-spring-boot-starter:6.1.0")
 
 }
 
