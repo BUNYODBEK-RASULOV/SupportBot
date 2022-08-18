@@ -14,8 +14,8 @@ interface UserService {
 interface GroupService {
     fun update(group: Group): Group
     fun getGroupByUserId(user: User): Group
-    fun connectOperator(operator: User):Group?
-    fun getGroupByOperatorId(operator:User): Group
+    fun getNewGroupByOperator(operator: User):Group?
+    fun getGroupByOperatorId(operator:User): Group?
     // groupni yopish
     fun deleteGroupByOperator(operator: User)
 
@@ -23,7 +23,7 @@ interface GroupService {
 interface MessageService{
     fun creat(message: String,group: Group,user: User)
     fun creat(message: String,group: Group,user: User,readed:Boolean)
-    fun getUserMessage(user: User,group: Group):List<MessageEntity>
+    fun getUserMessage(group: Group):List<MessageEntity>
 //    order date, readed=false,
 //    kiyin readed=true qilib quyasizlar
 }
@@ -45,10 +45,9 @@ interface ContactService{
         messageRepository.save(MessageEntity(user,group,message,user.language,readed))
     }
 
-    override fun getUserMessage(user: User, group: Group): List<MessageEntity> {
-        val userId=user.id
+    override fun getUserMessage(group: Group): List<MessageEntity> {
         val groupId=group.id
-        val messageEntityList = messageRepository.getUserMessage(userId!!, groupId!!)
+        val messageEntityList = messageRepository.getUserMessage(group.user!!.id!!, groupId!!)
         val list= mutableListOf<MessageEntity>()
         for (entity in messageEntityList){
             entity.readed=true
@@ -69,7 +68,7 @@ class GroupServiceImpl(
     }
 
     override fun getGroupByUserId(user: User): Group {
-    return groupRepository.findByUserIdAndDeleted(user.id!!).run { this } ?: createGroup(user)
+    return groupRepository.getGroupByUserIdAndActive(user.id!!).run { this } ?: createGroup(user)
     }
 
 
@@ -77,22 +76,16 @@ class GroupServiceImpl(
         return groupRepository.save(Group(user,null,user.language))
     }
     override fun getGroupByOperatorId(operator: User): Group {
-        return groupRepository.findByOperatorIdAndDeleted(operator.id!!).run { this } ?: Group(  )
+        return groupRepository.getGroupByOperatorIdAndActive(operator.id!!).run { this } ?: Group(  )
     }
 
 
-    override fun connectOperator(operator: User): Group? {
-       return  groupRepository.getOperator(operator.language)?:throw RuntimeException("bunday group yoq")
+    override fun getNewGroupByOperator(operator: User): Group? {
+       return  groupRepository.getGroupByOperatorAndLanguageAndActive(operator.language)?:throw RuntimeException("bunday group yoq")
     }
 
     override fun deleteGroupByOperator(operator: User) {
-        val operatorId=operator.id
-        groupRepository.findByOperatorId(operatorId!!)?.run {
-            this.deleted=true
-            groupRepository.save(this)
-        }
-
-
+    groupRepository.deleteGroup(operator.id!!)
     }
 }
 @Service

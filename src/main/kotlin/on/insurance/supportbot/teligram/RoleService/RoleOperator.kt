@@ -31,9 +31,10 @@ class RoleOperator(
     fun operatorFunc(updateFunc: Update,userFunc: User){
         update = updateFunc
         operator = userFunc
-        group = groupService.getGroupByOperatorId(operator)
+        groupService.getGroupByOperatorId(operator)?.run { group = this }
 
         scanButton(update.message.text)
+
         when (operator.botStep) {
             BotStep.CHAT -> {
                 group.user?.run {
@@ -46,10 +47,12 @@ class RoleOperator(
             BotStep.BEGIN->{
                 botService.sendMassage(update.message.chatId,"Siz activ holga utdingiz",menuButton(""))
                 operator.botStep=BotStep.CHAT
+                begin()
             }
             BotStep.CLOSE->{
                 botService.sendMassage(update.message.chatId,"Chat yangilandi",menuButton(""))
                 operator.botStep=BotStep.CHAT
+                begin()
             }
         }
         userService.update(operator)
@@ -71,20 +74,20 @@ class RoleOperator(
         group.user?.run { botService.sendMassage(this.chatId, text,roleUser.queueButton("")) }
     }
 
-
-
     fun scanButton(text:String){
         when(text){
             "yopish"->{
                 operator.botStep=BotStep.CLOSE
+                groupService.deleteGroupByOperator(operator)
             }
             "chiqish"->{
                 operator.botStep=BotStep.BACK
                 userService.backOperator(operator)
+                groupService.deleteGroupByOperator(operator)
             }
             "begin"->{
-                userService.operatorIsActive(operator)
                 operator.botStep=BotStep.BEGIN
+                userService.operatorIsActive(operator)
             }
         }
     }
@@ -113,6 +116,21 @@ class RoleOperator(
                 text = "begin"
             }
         )))
+
+    }
+
+    fun begin(){
+        groupService.getNewGroupByOperator(operator)?.run {
+            val group = this
+            val userMessage = messageService.getUserMessage(group)
+            userMessage.forEach {
+                operator?.run {
+                    botService.sendMassage(chatId,it.massages)
+                }
+            }
+            group.operator=operator
+            groupService.update(group)
+        }
 
     }
 }
