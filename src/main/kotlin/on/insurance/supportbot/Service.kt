@@ -30,6 +30,7 @@ interface GroupService {
 }
 interface MessageService{
     fun creat(message: String,group: Group,user: User)
+    fun creat(message: String,group: Group,user: User,readed:Boolean)
     fun getUserMessage(user: User,group: Group):List<MessageEntity>
 //    order date, readed=false,
 //    kiyin readed=true qilib quyasizlar
@@ -43,6 +44,10 @@ interface MessageService{
         messageRepository.save(MessageEntity(user,group,message,user.language))
     }
 
+    override fun creat(message: String, group: Group, user: User, readed: Boolean) {
+        messageRepository.save(MessageEntity(user,group,message,user.language,readed))
+    }
+
     override fun getUserMessage(user: User, group: Group): List<MessageEntity> {
         val userId=user.id
         val groupId=group.id
@@ -52,6 +57,7 @@ interface MessageService{
             entity.readed=true
             list.add(entity)
         }
+        messageRepository.saveAll(list)
         return list
     }
 }
