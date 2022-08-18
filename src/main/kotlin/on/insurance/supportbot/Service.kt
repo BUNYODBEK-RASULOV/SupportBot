@@ -19,6 +19,7 @@ interface UserService {
 interface GroupService {
     fun update(group: Group): Group
     fun getGroupByUserId(user: User): Group
+    fun connectOperator(operator: User):Group?
 
 //    fun connectOperator(operator: User):Group
 //    operator= null
@@ -29,8 +30,7 @@ interface GroupService {
 }
 interface MessageService{
     fun creat(message: String,group: Group,user: User)
-
-//    fun getUserMessage(user: User,group: Group):List<MessageEntity>
+    fun getUserMessage(user: User,group: Group):List<MessageEntity>
 //    order date, readed=false,
 //    kiyin readed=true qilib quyasizlar
 }
@@ -42,7 +42,20 @@ interface MessageService{
     override fun creat(message: String, group: Group, user: User) {
         messageRepository.save(MessageEntity(user,group,message,user.language))
     }
+
+    override fun getUserMessage(user: User, group: Group): List<MessageEntity> {
+        val userId=user.id
+        val groupId=group.id
+        val messageEntityList = messageRepository.getUserMessage(userId!!, groupId!!)
+        val list= mutableListOf<MessageEntity>()
+        for (entity in messageEntityList){
+            entity.readed=true
+            list.add(entity)
+        }
+        return list
+    }
 }
+
 
 
 
@@ -62,6 +75,10 @@ class GroupServiceImpl(
 
     fun createGroup(user: User): Group {
         return groupRepository.save(Group(user,null,user.language))
+    }
+
+    override fun connectOperator(operator: User): Group? {
+        return  groupRepository.getOperator(operator.language)?:throw RuntimeException("bunday group yoq")
     }
 
 
@@ -91,5 +108,8 @@ class GroupServiceImpl(
             TODO("Not yet implemented")
         }
 
+    }
 }
-}
+
+
+
