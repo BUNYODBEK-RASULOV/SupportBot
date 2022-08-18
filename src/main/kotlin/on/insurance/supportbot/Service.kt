@@ -1,9 +1,6 @@
 package on.insurance.supportbot
 
-import on.insurance.supportbot.teligram.Group
-import on.insurance.supportbot.teligram.Language
-import on.insurance.supportbot.teligram.MessageEntity
-import on.insurance.supportbot.teligram.User
+import on.insurance.supportbot.teligram.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.jpa.repository.Query
 import org.springframework.expression.spel.ast.Operator
@@ -35,6 +32,10 @@ interface MessageService{
     fun getUserMessage(user: User,group: Group):List<MessageEntity>
 //    order date, readed=false,
 //    kiyin readed=true qilib quyasizlar
+}
+
+interface ContactService{
+    fun saveContact(phoneNumber:String,username:String,user: User)
 }
 
 @Service
@@ -111,6 +112,14 @@ class UserServiceImpl(
         TODO("Not yet implemented")
     }
 
+}
+
+@Service
+class ContactServiceImpl(private val contactRepository: ContactRepository):ContactService{
+    override fun saveContact(phoneNumber: String, username: String, user: User) {
+            val contact= Contact(phoneNumber,user,username)
+            contactRepository.save(contact)
+    }
 }
 
 
