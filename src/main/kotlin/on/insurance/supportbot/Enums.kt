@@ -14,3 +14,7 @@ enum class  Role{
     USER,ADMIN , OPERATOR
 
 }
+enum class ErrorCode(val code: Int) {
+    GENERAL(100),
+    OBJECT_NOT_FOUND(101)
+}
