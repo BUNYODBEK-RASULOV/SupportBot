@@ -10,6 +10,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException
 
+
 @Service
 class BotService(
     val myBot: MyBot,
@@ -68,6 +69,7 @@ class BotService(
         sendMessage.enableMarkdown(true)
         myBot.execute(sendMessage) ?: throw TelegramApiException("xatolik")
     }
+
 
 
     fun sendMassage(chatId: Long, text: String) {
