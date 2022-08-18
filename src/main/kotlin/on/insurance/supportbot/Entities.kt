@@ -44,7 +44,7 @@ class Message(
 ) : BaseEntity()
 
 
-@Entity
+@Entity(name = "groups")
 class Group(
     @ManyToOne var userId: User?=null,
     @ManyToOne var operatorId: User? = null,
