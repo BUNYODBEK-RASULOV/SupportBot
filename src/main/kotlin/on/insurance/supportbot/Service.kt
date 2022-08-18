@@ -20,19 +20,12 @@ interface GroupService {
     fun update(group: Group): Group
     fun getGroupByUserId(user: User): Group
     fun connectOperator(operator: User):Group?
-    fun getGroupByUserId(userId: Long): Group
-    fun getGroupByOperatorId(operatorId: Long): Group
-    fun connectOperator(operator: User):Group?
-
-//    fun connectOperator(operator: User):Group
-//    operator= null
-//    and isActive = true
-//    and group.Language=operator.Language
-//    order by date 1
+    fun getGroupByOperatorId(operator: Long): Group
 
 }
 interface MessageService{
     fun creat(message: String,group: Group,user: User)
+    fun getUserMessage(user: User, group: Group): List<MessageEntity>
 
 //    fun getUserMessage(user: User,group: Group):List<MessageEntity>
 //    order date, readed=false,
@@ -73,8 +66,9 @@ class GroupServiceImpl(
     }
 
     override fun getGroupByUserId(user: User): Group {
-    return groupRepository.findByUserIdAndNotDeleted(user.id!!).run { this } ?: createGroup(user)
+    return groupRepository.findByUserIdAndDeleted(user.id!!).run { this } ?: createGroup(user)
     }
+
 
     fun createGroup(user: User): Group {
         return groupRepository.save(Group(user,null,user.language))
@@ -88,9 +82,6 @@ class GroupServiceImpl(
        return  groupRepository.getOperator(operator.language)?:throw RuntimeException("bunday group yoq")
     }
 
-    override fun connectOperator(operator: User): Group? {
-        return  groupRepository.getOperator(operator.language)?:throw RuntimeException("bunday group yoq")
-    }
 
 
 
