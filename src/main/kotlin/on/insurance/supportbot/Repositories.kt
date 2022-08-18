@@ -52,6 +52,10 @@ interface GroupRepository : BaseRepository<Group>{
     @Query("""select * from groups g where g.is_active=true and g.language=:language and
     g.operator_id is null and g.deleted = false order by created_date limit 1""", nativeQuery = true)
     fun  getOperator(language: Language): Group?
+    @Query("""update  groups g set g.is_active=false where g.operator_id and g.is_active=true""", nativeQuery = true)
+    fun deleteGroup(operatorId: Long):Group?
+
+
 }
 interface ContactRepository:BaseRepository<Contact>{
 
@@ -61,4 +65,8 @@ interface MessageRepository:BaseRepository<MessageEntity>{
     @Query("""select * from message m where m.readed=fale and m.user_id=:userId and 
         m.group_id=:groupId order by created_date""", nativeQuery = true)
     fun getUserMessage(userId:Long,groupId:Long):List<MessageEntity>
+}
+
+interface OperatorRepository:BaseRepository<Operator>{
+
 }

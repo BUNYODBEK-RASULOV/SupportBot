@@ -2,12 +2,12 @@ POST localhost:8081/api/v1/operator
 Content-Type: application/json
 
 {
-  "name": "karimxon",
+  "name": "karimxon1",
   "phoneNumber": "998946099784"
 }
 
 ###
-GET localhost:8081/api/v1/operator/6
+GET localhost:8081/api/v1/operator/2
 
 ###
 PUT localhost:8081/api/v1/operator/1
