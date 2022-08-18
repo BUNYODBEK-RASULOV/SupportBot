@@ -1,0 +1,27 @@
+POST localhost:8081/api/v1/operator
+Content-Type: application/json
+
+{
+  "name": "karimxon",
+  "phoneNumber": "998946099784"
+}
+
+###
+GET localhost:8081/api/v1/operator/6
+
+###
+PUT localhost:8081/api/v1/operator/1
+Content-Type: application/json
+
+{
+  "phoneNumber": "50031"
+}
+
+###
+
+GET localhost:8081/api/v1/operator/list
+
+
+###
+
+DELETE localhost:8081/api/v1/operator/1

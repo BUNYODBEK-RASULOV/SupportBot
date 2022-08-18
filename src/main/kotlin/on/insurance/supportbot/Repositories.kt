@@ -37,6 +37,7 @@ class BaseRepositoryImpl<T : BaseEntity>(
         findById(id).orElseGet { null }?.run { if (!this.deleted) this else null }
 }
 
+
 interface UserRepository : BaseRepository<User> {
         @Query("select * from users u where u.chat_id = ?1",nativeQuery = true)
         fun findByChatIdd(chatId:Long):User?
@@ -51,8 +52,6 @@ interface GroupRepository : BaseRepository<Group>{
     @Query("""select * from groups g where g.is_active=true and g.language=:language and
     g.operator_id is null and g.deleted = false order by created_date limit 1""", nativeQuery = true)
     fun  getOperator(language: Language): Group?
-
-    fun findByOperatorId(operatorId: Long):Group?
 }
 interface ContactRepository:BaseRepository<Contact>{
 

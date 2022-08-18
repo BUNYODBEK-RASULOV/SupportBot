@@ -1,6 +1,9 @@
 package on.insurance.supportbot
 
-import on.insurance.supportbot.teligram.*
+import on.insurance.supportbot.teligram.Group
+import on.insurance.supportbot.teligram.MessageEntity
+import on.insurance.supportbot.teligram.RoleService.*
+import on.insurance.supportbot.teligram.User
 import org.springframework.stereotype.Service
 
 interface UserService {
@@ -33,12 +36,13 @@ interface ContactService{
     fun checkContact(contact: Contact,user: User)
 }
 
+
 @Service
- class MessageServiceImpl(
-    val messageRepository:MessageRepository
-    ):MessageService{
+class MessageServiceImpl(
+    val messageRepository: MessageRepository
+) : MessageService {
     override fun creat(message: String, group: Group, user: User) {
-        messageRepository.save(MessageEntity(user,group,message,user.language))
+        messageRepository.save(MessageEntity(user, group, message, user.language))
     }
 
     override fun creat(message: String, group: Group, user: User, readed: Boolean) {
@@ -82,7 +86,7 @@ class GroupServiceImpl(
 
 
     override fun connectOperator(operator: User): Group? {
-       return  groupRepository.getOperator(operator.language)?:throw RuntimeException("bunday group yoq")
+        return groupRepository.getOperator(operator.language) ?: throw RuntimeException("bunday group yoq")
     }
 
     override fun deleteGroupByOperator(operator: User) {
@@ -93,15 +97,18 @@ class GroupServiceImpl(
         }
 
 
-    }
-}
-@Service
-class UserServiceImpl(
-    private val userRepository: UserRepository
-) : UserService {
-    override fun getUser(chatId: Long): User {
-        return userRepository.findByChatIdd(chatId)?.run { this } ?: createUser(chatId)
-    }
+
+
+
+
+
+    @Service
+    class UserServiceImpl(
+        private val userRepository: UserRepository
+    ) : UserService {
+        override fun getUser(chatId: Long): User {
+            return userRepository.findByChatIdd(chatId)?.run { this } ?: createUser(chatId)
+        }
 
 
     fun createUser(chatId: Long): User {
@@ -126,6 +133,30 @@ class UserServiceImpl(
         userRepository.save(operator)
     }
 }
+
+@Service
+class OperatorServiceImpl(private val repository: OperatorRepository) : OperatorService {
+    override fun create(dto: OperatorCreateDto) {
+        repository.save(dto.toEntity())
+    }
+
+    override fun update(id: Long, dto: OperatorUpdateDto) {
+        val entity = repository.findByIdNotDeleted(id) ?:
+        throw NullPointerException("we have not this operator")
+        dto.run {
+            name?.run { entity.name = this }
+            phoneNumber?.run { entity.phoneNumber = this }
+            repository.save(entity)
+        }
+    }
+
+    override fun get(id: Long): OperatorDto =  repository.findByIdNotDeleted(id)?.run { OperatorDto.toDto(this) }
+        ?: throw NullPointerException("Couldn't find by id")
+
+
+    override fun delete(id: Long) {
+        repository.trash(id)
+    }
 
 @Service
 class ContactServiceImpl(private val contactRepository: ContactRepository):ContactService{
