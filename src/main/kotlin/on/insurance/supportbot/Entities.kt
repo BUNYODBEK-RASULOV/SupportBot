@@ -35,6 +35,7 @@ class User(
 
 @Entity
 class Message(
+
     @ManyToOne var userId: User,
     @ManyToOne var groupId: Group,
     var massages: String,
