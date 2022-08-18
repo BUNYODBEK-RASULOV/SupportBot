@@ -1,11 +1,7 @@
 package on.insurance.supportbot
 
 import on.insurance.supportbot.teligram.*
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.jpa.repository.Query
-import org.springframework.expression.spel.ast.Operator
 import org.springframework.stereotype.Service
-import org.telegram.telegrambots.meta.api.objects.Update
 
 interface UserService {
     fun getUser(chatId: Long): User
@@ -20,12 +16,8 @@ interface GroupService {
     fun getGroupByUserId(user: User): Group
     fun connectOperator(operator: User):Group?
     fun getGroupByOperatorId(operator:User): Group
-
-//    fun connectOperator(operator: User):Group
-//    operator= null
-//    and isActive = true
-//    and group.Language=operator.Language
-//    order by date 1
+    // groupni yopish
+    fun deleteGroupByOperator(operator: User)
 
 }
 interface MessageService{
@@ -93,6 +85,15 @@ class GroupServiceImpl(
        return  groupRepository.getOperator(operator.language)?:throw RuntimeException("bunday group yoq")
     }
 
+    override fun deleteGroupByOperator(operator: User) {
+        val operatorId=operator.id
+        groupRepository.findByOperatorId(operatorId!!)?.run {
+            this.deleted=true
+            groupRepository.save(this)
+        }
+
+
+    }
 }
 @Service
 class UserServiceImpl(
