@@ -64,4 +64,8 @@ class RoleUser(
         )))
 
     }
+
+    fun scanButton(text:String){
+
+    }
 }
