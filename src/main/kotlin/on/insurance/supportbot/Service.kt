@@ -40,11 +40,11 @@ interface ContactService{
     override fun creat(message: String, group: Group, user: User) {
         messageRepository.save(MessageEntity(user,group,message,user.language))
     }
-}
 
     override fun creat(message: String, group: Group, user: User, readed: Boolean) {
         messageRepository.save(MessageEntity(user,group,message,user.language,readed))
     }
+
 
     override fun getUserMessage(group: Group): List<MessageEntity> {
         val groupId=group.id
