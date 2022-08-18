@@ -37,7 +37,6 @@ class BotService(
                 sendMassage(chatId,"tilni tanlang",languageButtons())
                 user.botStep=BotStep.LANGUAGE
                 userService.update(user)
-                return
             }
             BotStep.CONTACT->{
                 sendMassage(chatId,"raxmat")
@@ -49,9 +48,12 @@ class BotService(
         }
 
         when(user.role){
-            Role.USER->{roleUser.userFunc(update,user)}
-            Role.OPERATOR ->{ roleOperator.operatorFunc(update, user)}
-            Role.ADMIN ->{ roleAdmin.adminFunc(update, user)}
+            Role.USER->{roleUser.userFunc(update,user)
+            return}
+            Role.OPERATOR ->{ roleOperator.operatorFunc(update, user)
+            return}
+            Role.ADMIN ->{ roleAdmin.adminFunc(update, user)
+            return}
         }
     }
 
@@ -73,7 +75,6 @@ class BotService(
                 user.botStep=BotStep.CONTACT
                 user.language= Language.valueOf(data)
                 userService.update(user)
-                return
             }
         }
     }

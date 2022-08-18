@@ -34,7 +34,7 @@ class User(
 ) : BaseEntity()
 
 @Entity
-class Message(
+class MessageEntity(
     @ManyToOne var user: User,
     @ManyToOne var group: Group,
     var massages: String,
@@ -48,6 +48,6 @@ class Message(
 class Group(
     @ManyToOne var user: User?=null,
     @ManyToOne var operator: User? = null,
-    @Enumerated(EnumType.STRING) var language: Language=Language.UZ,
+    @Enumerated(EnumType.STRING) var language: Language?=null,
     var isActive: Boolean = true
 ) : BaseEntity()

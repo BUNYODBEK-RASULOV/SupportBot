@@ -18,7 +18,7 @@ interface UserService {
 
 interface GroupService {
     fun update(group: Group): Group
-    fun getGroupByUserId(userId: Long): Group
+    fun getGroupByUserId(user: User): Group
 
 //    fun connectOperator(operator: User):Group
 //    operator= null
@@ -56,12 +56,12 @@ class GroupServiceImpl(
         return groupRepository.save(group)
     }
 
-    override fun getGroupByUserId(userId: Long): Group {
-    return groupRepository.findByUserIdAndDeleted(userId).run { this } ?: createGroup(userId)
+    override fun getGroupByUserId(user: User): Group {
+    return groupRepository.findByUserIdAndNotDeleted(user.id!!).run { this } ?: createGroup(user)
     }
 
-    fun createGroup(userId: Long): Group {
-        return groupRepository.save(Group(userRepository.findById(userId).get()))
+    fun createGroup(user: User): Group {
+        return groupRepository.save(Group(user,null,user.language))
     }
 
 
