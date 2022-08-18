@@ -2,6 +2,7 @@ package on.insurance.supportbot
 
 import on.insurance.supportbot.teligram.BaseEntity
 import on.insurance.supportbot.teligram.Contact
+import on.insurance.supportbot.teligram.Group
 import on.insurance.supportbot.teligram.User
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -43,10 +44,10 @@ interface UserRepository : BaseRepository<User> {
         @Query("select * from users u where u.chat_id = ?1",nativeQuery = true)
         fun findByChatIdd(chatId:Long):User?
 }
-//interface GroupRepository : BaseRepository<Group>{
-//    @Query("select g from Group g where g.userId = ?1 and g.deleted = false")
-//    fun  findByUserIdAndDeleted(userId:Long): Group
-//}
+interface GroupRepository : BaseRepository<Group>{
+    @Query("select * from groups g where g.userId = ?1 and g.deleted = false", nativeQuery = true)
+    fun  findByUserIdAndDeleted(userId:Long): Group?
+}
 interface ContactRepository:BaseRepository<Contact>{
 
 }
