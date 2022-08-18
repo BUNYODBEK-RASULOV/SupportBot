@@ -12,39 +12,38 @@ class RoleUser(
     @Lazy
     val botService: BotService,
     val groupService: GroupService,
-    val messageService:MessageService
+    val messageService: MessageService
 ) {
     lateinit var update: Update
     lateinit var user: User
-    lateinit var group:Group
+    lateinit var group: Group
 
-    fun userFunc(updateFunc: Update,userFunc: User){
-        update=updateFunc
-        user=userFunc
-        group=groupService.getGroupByUserId(user)
+    fun userFunc(updateFunc: Update, userFunc: User) {
+        update = updateFunc
+        user = userFunc
+        group = groupService.getGroupByUserId(user)
 
 
-        when(user.botStep){
-            BotStep.CHAT->{
+        when (user.botStep) {
+            BotStep.CHAT -> {
                 saveChat()
                 sendText()
             }
         }
     }
 
-    fun saveChat(){
-        val group=groupService.getGroupByUserId(user)
-        val text=update.message.text
-        messageService.creat(text,group,user)
-        botService.sendMassage(update.message.chatId,text)
+    fun saveChat() {
+        val text = update.message.text
+        messageService.creat(text, group, user,group.operator!=null)
     }
-    fun sendText(){
-        var chatId:Long=0
-        var text:String=""
+
+    fun sendText() {
+        var chatId: Long = 0
+        var text: String = ""
         update.message?.run {
-            chatId=getChatId()
-            text=getText()
+            chatId = getChatId()
+            text = getText()
         }
-        group.operator?.run { botService.sendMassage(chatId,text) }
+        group.operator?.run { botService.sendMassage(this.chatId, text) }
     }
 }
