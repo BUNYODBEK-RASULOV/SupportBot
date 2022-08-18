@@ -4,11 +4,11 @@ enum class  BotStep{
     START,
     LANGUAGE,
     CONTACT,
-    CHAT,
 
 }
 enum class  Language{
-    UZ, RU , ENG;
+    UZ, RU , ENG
+
 }
 enum class  Role{
     USER,ADMIN , OPERATOR
