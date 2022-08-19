@@ -24,9 +24,7 @@ interface GroupService {
 interface MessageService{
     fun creat(message: String,group: Group,user: User)
     fun creat(message: String,group: Group,user: User,readed:Boolean)
-    fun getUserMessage(group: Group):List<MessageEntity>
-//    order date, readed=false,
-//    kiyin readed=true qilib quyasizlar
+    fun getUserMessage(group: Group):List<MessageEntity>?
 }
 
 interface ContactService{
@@ -46,16 +44,17 @@ interface ContactService{
         messageRepository.save(MessageEntity(user,group,message,user.language,readed))
     }
 
-    override fun getUserMessage(group: Group): List<MessageEntity> {
-        val groupId=group.id
-        val messageEntityList = messageRepository.getUserMessage(group.user!!.id!!, groupId!!)
-        val list= mutableListOf<MessageEntity>()
-        for (entity in messageEntityList){
-            entity.readed=true
-            list.add(entity)
-        }
-        messageRepository.saveAll(list)
-        return list
+    override fun getUserMessage(group: Group): List<MessageEntity>? {
+            messageRepository.getUserMessage(group.user!!.id!!, group.id!!)?.run {
+                val list= mutableListOf<MessageEntity>()
+                for (entity in this){
+                    entity.readed=true
+                    list.add(entity)
+                }
+                messageRepository.saveAll(list)
+                return list
+            }
+        return emptyList()
     }
 }
 @Service
@@ -84,7 +83,7 @@ class GroupServiceImpl(
 
     override fun getNewGroupByOperator(operator: User): Group? {
         println(operator.language.name)
-       return  groupRepository.getGroupByOperatorAndLanguageAndActive(operator.language.name,operator.id!!)?:throw RuntimeException("bunday group yoq")
+       return  groupRepository.getGroupByOperatorAndLanguageAndActive(operator.language.name,operator.id!!)?:Group(null,null,null)
     }
 
     override fun deleteGroupByOperator(operator: User) {
