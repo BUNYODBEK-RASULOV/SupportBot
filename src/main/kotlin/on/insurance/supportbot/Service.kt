@@ -96,16 +96,21 @@ class GroupServiceImpl(
 
     override fun getGroupByOperatorId(operator: User): Group {
         return groupRepository.getGroupByOperatorIdAndActive(operator.id!!).run { this } ?: Group()
+        return groupRepository.getGroupByOperatorIdAndActive(operator.id!!)?.run { this } ?: Group(null,null,null)
     }
 
 
     override fun getNewGroupByOperator(operator: User): Group? {
+       return  groupRepository.getGroupByOperatorAndLanguageAndActive(operator.language.toString())?:throw RuntimeException("bunday group yoq")
         return groupRepository.getGroupByOperatorAndLanguageAndActive(operator.language)
             ?: throw RuntimeException("bunday group yoq")
     }
 
     override fun deleteGroupByOperator(operator: User) {
         groupRepository.deleteGroup(operator.id!!)
+        groupRepository.existsByActiveAndOperatorId(operator.id!!)
+            .ifTrue { groupRepository.deleteGroup(operator.id!!) }
+
     }
 }
 
@@ -131,21 +136,21 @@ class UserServiceImpl(
     }
 
     override fun backOperator(operator: User) {
-        operator.isActive = false
+        operator.isActive=false
         userRepository.save(operator)
     }
 
     override fun operatorIsActive(operator: User) {
-        operator.isActive = true
+        operator.isActive=true
         userRepository.save(operator)
     }
 }
 
 @Service
-class ContactServiceImpl(private val contactRepository: ContactRepository) : ContactService {
+class ContactServiceImpl(private val contactRepository: ContactRepository):ContactService{
     override fun saveContact(phoneNumber: String, username: String, user: User) {
-        var contact = Contact(phoneNumber, user, username)
-        contactRepository.save(contact)
+            var contact= Contact(phoneNumber,user,username)
+             contact=contactRepository.save(contact)
     }
 
     override fun checkContact(contact: Contact, user: User) {

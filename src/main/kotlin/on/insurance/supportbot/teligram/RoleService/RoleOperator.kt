@@ -31,15 +31,20 @@ class RoleOperator(
     fun operatorFunc(updateFunc: Update,userFunc: User){
         update = updateFunc
         operator = userFunc
+
         groupService.getGroupByOperatorId(operator)?.run { group = this }
-
         scanButton(update.message.text)
-
         when (operator.botStep) {
             BotStep.CHAT -> {
-                group.user?.run {
+                var user:User?=group.user
+                if (user!=null){
                     saveChat()
-                    sendText() }
+                    sendText()
+                }
+                else{
+                    botService.sendMassage(update.message.chatId,"Chat yangilandi",menuButton(""))
+                    operator.botStep=BotStep.CHAT
+                    }
             }
             BotStep.BACK->{
                 botService.sendMassage(update.message.chatId,"begin tugmasini bosing boshlash uchun",beginButton(""))
@@ -75,6 +80,7 @@ class RoleOperator(
     }
 
     fun scanButton(text:String){
+
         when(text){
             "yopish"->{
                 operator.botStep=BotStep.CLOSE

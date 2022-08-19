@@ -51,10 +51,13 @@ interface GroupRepository : BaseRepository<Group>{
 
     @Query("""select * from groups g where g.is_active=true and g.language=:language and
     g.operator_id is null and g.deleted = false order by created_date limit 1""", nativeQuery = true)
-    fun  getGroupByOperatorAndLanguageAndActive(language: Language): Group?
+    fun  getGroupByOperatorAndLanguageAndActive(language: String): Group?
 
-    @Query("""update  groups  set is_active=false, where operator_id=?1 and is_active=true""", nativeQuery = true)
-    fun deleteGroup(operatorId: Long)
+    @Query("""update  groups g  set is_active=false where g.operator_id=?1 and is_active=true""", nativeQuery = true)
+    fun deleteGroup(operatorId: Long):Group?
+
+    @Query(value = "select (count(g) > 0) from groups g where g.is_active = true and g.operator_id = ?1",nativeQuery = true)
+    fun existsByActiveAndOperatorId(operatorId:Long):Boolean
 
     fun findByOperatorId(operatorId: Long):Group?
 }
