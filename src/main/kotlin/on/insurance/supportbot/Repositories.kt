@@ -41,12 +41,14 @@ class BaseRepositoryImpl<T : BaseEntity>(
 interface UserRepository : BaseRepository<User> {
         @Query("select * from users u where u.chat_id = ?1",nativeQuery = true)
         fun findByChatIdd(chatId:Long):User?
+
+       //  fun existsByEmptyOperator()
 }
 interface GroupRepository : BaseRepository<Group>{
     @Query("select * from groups g where g.user_id = ?1 and g.is_active = true ", nativeQuery = true)
     fun  getGroupByUserIdAndActive(userId:Long): Group?
 
-    @Query("select * from groups g where g.operator_id = ?1 and g.is_active = true", nativeQuery = true)
+    @Query("select * from groups g where g.operator_id = ?1 and g.is_active = true and ", nativeQuery = true)
     fun  getGroupByOperatorIdAndActive(operatorId:Long): Group?
 
     @Query("""select * from groups g where g.is_active=true and g.language=:language and
@@ -59,7 +61,8 @@ interface GroupRepository : BaseRepository<Group>{
     @Query(value = "select (count(g) > 0) from groups g where g.is_active = true and g.operator_id = ?1",nativeQuery = true)
     fun existsByActiveAndOperatorId(operatorId:Long):Boolean
 
-    fun findByOperatorId(operatorId: Long):Group?
+   // fun existsByEmptyOperator()
+   // fun findByOperatorId(operatorId: Long):Group?
 }
 interface ContactRepository:BaseRepository<Contact>{
 
