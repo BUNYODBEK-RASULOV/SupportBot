@@ -135,6 +135,7 @@ class RoleOperator(
                     botService.sendMassage(opChatId,it.massages)
             }
             group1.operator=operator1
+            group1.isActive=true
             groupService.update(group1)
         }
 
