@@ -101,9 +101,9 @@ class GroupServiceImpl(
 
 
     override fun getNewGroupByOperator(operator: User): Group? {
-       return  groupRepository.getGroupByOperatorAndLanguageAndActive(operator.language.toString())?:throw RuntimeException("bunday group yoq")
-        return groupRepository.getGroupByOperatorAndLanguageAndActive(operator.language.toString())
-            ?: throw RuntimeException("bunday group yoq")
+        println("******************************************************************************")
+        println(operator.language.name)
+       return  groupRepository.getGroupByOperatorAndLanguageAndActive(operator.language.name)?:throw RuntimeException("bunday group yoq")
     }
 
     override fun deleteGroupByOperator(operator: User) {

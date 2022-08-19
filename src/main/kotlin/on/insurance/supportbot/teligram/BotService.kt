@@ -45,7 +45,7 @@ class BotService(
                 val contact = update.message.contact
                 contactService.saveContact(contact.phoneNumber,contact.firstName,user)
                 sendMassage(chatId,"raxmat")
-                user.botStep=BotStep.CHAT
+                user.botStep=BotStep.QUEUE
                 userService.update(user)
             }
 

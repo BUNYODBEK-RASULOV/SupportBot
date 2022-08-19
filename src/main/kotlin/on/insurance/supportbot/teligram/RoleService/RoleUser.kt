@@ -10,6 +10,7 @@ import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow
+import java.awt.SystemColor.text
 
 @Service
 class RoleUser(
@@ -29,7 +30,7 @@ class RoleUser(
         user = userFunc
         group = groupService.getGroupByUserId(user)
 
-        scanButton(update.message.text)
+        update.message?.text?.run { scanButton(this) }
         when (user.botStep) {
             BotStep.CHAT -> {
                 saveChat()
