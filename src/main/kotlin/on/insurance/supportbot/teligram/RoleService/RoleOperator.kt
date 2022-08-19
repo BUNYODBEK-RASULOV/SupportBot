@@ -32,7 +32,7 @@ class RoleOperator(
         update = updateFunc
         operator = userFunc
 
-        groupService.getGroupByOperatorId(operator)?.run { group = this }
+        group = groupService.getGroupByOperatorId(operator)?.run {  this }!!
         update.message?.text?.run { scanButton(this) }
         when (operator.botStep) {
             BotStep.CHAT -> {
@@ -126,16 +126,16 @@ class RoleOperator(
     }
 
     fun begin(){
+        var opChatId=operator.chatId
+        var operator1=operator
         groupService.getNewGroupByOperator(operator)?.run {
-            val group = this
-            val userMessage = messageService.getUserMessage(group)
+            var group1=groupService.getNewGroupByOperator(operator1)
+            val userMessage = messageService.getUserMessage(group1!!)
             userMessage.forEach {
-                operator?.run {
-                    botService.sendMassage(chatId,it.massages)
-                }
+                    botService.sendMassage(opChatId,it.massages)
             }
-            group.operator=operator
-            groupService.update(group)
+            group1.operator=operator1
+            groupService.update(group1)
         }
 
     }

@@ -49,8 +49,8 @@ interface GroupRepository : BaseRepository<Group>{
     fun  getGroupByOperatorIdAndActive(operatorId:Long): Group?
 
     @Query("""select * from groups g where g.is_active=true and g.language=:language and
-    g.operator_id is null and g.deleted = false order by created_date limit 1""", nativeQuery = true)
-    fun  getGroupByOperatorAndLanguageAndActive(language: String): Group?
+    g.operator_id is null and g.deleted = false and g.user_id!=:operatorId order by created_date limit 1""", nativeQuery = true)
+    fun  getGroupByOperatorAndLanguageAndActive(language: String,operatorId:Long): Group?
 
     @Query("""update  groups g  set is_active=false where g.operator_id=?1 and is_active=true""", nativeQuery = true)
     fun deleteGroup(operatorId: Long):Group?

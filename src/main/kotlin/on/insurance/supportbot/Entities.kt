@@ -34,7 +34,7 @@ class User(
 ) : BaseEntity()
 
 @Entity(name = "message")
-class MessageEntity(
+data class MessageEntity(
     @ManyToOne var user: User,
     @ManyToOne var group: Group,
     var massages: String,

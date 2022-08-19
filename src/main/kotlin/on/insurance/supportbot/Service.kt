@@ -65,6 +65,7 @@ class GroupServiceImpl(
 ) : GroupService {
 
     override fun update(group: Group): Group {
+//        groupRepository.findById(group)
         return groupRepository.save(group)
     }
 
@@ -82,9 +83,8 @@ class GroupServiceImpl(
 
 
     override fun getNewGroupByOperator(operator: User): Group? {
-        println("******************************************************************************")
         println(operator.language.name)
-       return  groupRepository.getGroupByOperatorAndLanguageAndActive(operator.language.name)?:throw RuntimeException("bunday group yoq")
+       return  groupRepository.getGroupByOperatorAndLanguageAndActive(operator.language.name,operator.id!!)?:throw RuntimeException("bunday group yoq")
     }
 
     override fun deleteGroupByOperator(operator: User) {
