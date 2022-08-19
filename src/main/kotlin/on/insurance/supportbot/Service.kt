@@ -95,14 +95,14 @@ class GroupServiceImpl(
     }
 
     override fun getGroupByOperatorId(operator: User): Group {
-        return groupRepository.getGroupByOperatorIdAndActive(operator.id!!).run { this } ?: Group()
+        return groupRepository.getGroupByOperatorIdAndActive(operator.id!!).run { this } ?: Group(null,null,null)
         return groupRepository.getGroupByOperatorIdAndActive(operator.id!!)?.run { this } ?: Group(null,null,null)
     }
 
 
     override fun getNewGroupByOperator(operator: User): Group? {
        return  groupRepository.getGroupByOperatorAndLanguageAndActive(operator.language.toString())?:throw RuntimeException("bunday group yoq")
-        return groupRepository.getGroupByOperatorAndLanguageAndActive(operator.language)
+        return groupRepository.getGroupByOperatorAndLanguageAndActive(operator.language.toString())
             ?: throw RuntimeException("bunday group yoq")
     }
 
@@ -160,7 +160,7 @@ class ContactServiceImpl(private val contactRepository: ContactRepository):Conta
 
 }
 
-
+@Service
 class OperatorServiceImpl(
     private val repository: OperatorRepository
 ) : OperatorService {
