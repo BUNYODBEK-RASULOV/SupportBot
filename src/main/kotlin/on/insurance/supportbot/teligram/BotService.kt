@@ -43,7 +43,7 @@ class BotService(
             }
             BotStep.CONTACT->{
                 val contact = update.message.contact
-                contactService.saveContact(contact.phoneNumber,contact.firstName,user)
+                val saveContact = contactService.saveContact(contact.phoneNumber, contact.firstName, user)
                 sendMassage(chatId,"raxmat")
                 user.botStep=BotStep.QUEUE
                 userService.update(user)

@@ -42,6 +42,12 @@ class BaseRepositoryImpl<T : BaseEntity>(
 interface UserRepository : BaseRepository<User> {
     @Query("select * from users u where u.chat_id = ?1", nativeQuery = true)
     fun findByChatIdd(chatId: Long): User?
+
+    @Query(value = """select * from users u
+    where u.deleted=false
+     and u.is_active=true
+     and u.role='OPERATOR' and u.language=:language """,nativeQuery = true)
+    fun emptyOperator(language: String):User?
 }
 
 interface GroupRepository : BaseRepository<Group> {
