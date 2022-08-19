@@ -88,6 +88,7 @@ class GroupServiceImpl(
 
 
     fun createGroup(user: User): Group {
+        val lang=user.language
         return groupRepository.save(Group(user,null,user.language))
     }
     override fun getGroupByOperatorId(operator: User): Group {
