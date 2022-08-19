@@ -14,6 +14,8 @@ interface UserService {
     fun get(userId: Long): Group
     fun backOperator(operator: User)
     fun operatorIsActive(operator: User)
+
+    fun checkOperator(contact: Contact,user: User):User
 }
 
 interface GroupService {
@@ -108,7 +110,8 @@ class GroupServiceImpl(
 }
 @Service
 class UserServiceImpl(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val operatorRepository: OperatorRepository
 ) : UserService {
     override fun getUser(chatId: Long): User {
         return userRepository.findByChatIdd(chatId)?.run { this } ?: createUser(chatId)
@@ -135,6 +138,14 @@ class UserServiceImpl(
     override fun operatorIsActive(operator: User) {
         operator.isActive=true
         userRepository.save(operator)
+    }
+
+    override fun checkOperator(contact: Contact, user: User): User {
+        val phoneNumber=contact.phoneNumber
+        if (operatorRepository.existsByPhoneNumber(phoneNumber)){
+            user.run { this.role=Role.OPERATOR }
+        }
+       return userRepository.save(user)
     }
 }
 
