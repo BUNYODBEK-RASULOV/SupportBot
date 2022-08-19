@@ -185,7 +185,7 @@ class OperatorServiceImpl(
         repository.trash(id)
     }
 
-    override fun listOfOperator() = repository.findAllNotDeleted().map(OperatorDto.Companion::toDto)
+    override fun listOfOperator() = repository.getAllOperator().map(OperatorDto.Companion::toDto)
 }
 
 

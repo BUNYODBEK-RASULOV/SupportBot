@@ -1,4 +1,4 @@
-POST localhost:8081/api/v1/operator
+POST localhost:8082/api/v1/operator
 Content-Type: application/json
 
 {
@@ -7,10 +7,10 @@ Content-Type: application/json
 }
 
 ###
-GET localhost:8081/api/v1/operator/2
+GET localhost:8082/api/v1/operator/1
 
 ###
-PUT localhost:8081/api/v1/operator/1
+PUT localhost:8082/api/v1/operator/1
 Content-Type: application/json
 
 {
@@ -19,9 +19,9 @@ Content-Type: application/json
 
 ###
 
-GET localhost:8081/api/v1/operator/list
+GET localhost:8082/api/v1/operator/list
 
 
 ###
 
-DELETE localhost:8081/api/v1/operator/1
+DELETE localhost:8082/api/v1/operator/1

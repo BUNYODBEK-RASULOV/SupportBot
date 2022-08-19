@@ -108,8 +108,8 @@ class BotService(
 
     fun languageButtons():InlineKeyboardMarkup{
         val inlineKeyboardMarkup = InlineKeyboardMarkup()
-        var keyboardButtons= mutableListOf<InlineKeyboardButton>()
-        var buttons = listOf<Language>(Language.UZ, Language.RU, Language.ENG)
+        val keyboardButtons= mutableListOf<InlineKeyboardButton>()
+        val buttons = listOf<Language>(Language.UZ, Language.RU, Language.ENG)
         buttons.forEach {
             val inlineKeyboardButton = InlineKeyboardButton()
             inlineKeyboardButton.text =it.name

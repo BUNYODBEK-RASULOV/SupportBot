@@ -4,7 +4,7 @@ package on.insurance.supportbot
 import on.insurance.supportbot.teligram.Operator
 
 
-open class OperatorCreateDto(
+data class OperatorCreateDto(
     var name: String,
     var phoneNumber: String
 
@@ -12,19 +12,19 @@ open class OperatorCreateDto(
     fun toEntity(): Operator = Operator(name, phoneNumber)
 }
 
-open class OperatorUpdateDto(
+data class OperatorUpdateDto(
     var name: String? = null,
     var phoneNumber: String? = null
 )
 
-open class OperatorDto(
-    var id:Long,
+data class OperatorDto(
+    var id: Long,
     var name: String,
     var phoneNumber:String
 
 ) {
     companion object {
-        fun toDto(entity: Operator) = entity.run { OperatorDto(id!!,name,phoneNumber) }
+        fun toDto(entity: Operator) = OperatorDto(entity.id!!, entity.name, entity.phoneNumber)
     }
 }
 
