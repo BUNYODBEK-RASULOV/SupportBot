@@ -81,6 +81,7 @@ class RoleOperator(
         when(text){
             "yopish"->{
                 operator.botStep=BotStep.CLOSE
+                userService.operatorIsActive(operator)
                 groupService.deleteGroupByOperator(operator)
             }
             "chiqish"->{

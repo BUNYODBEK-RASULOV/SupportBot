@@ -38,21 +38,27 @@ class BaseRepositoryImpl<T : BaseEntity>(
         findById(id).orElseGet { null }?.run { if (!this.deleted) this else null }
 }
 
+
 interface UserRepository : BaseRepository<User> {
-        @Query("select * from users u where u.chat_id = ?1",nativeQuery = true)
-        fun findByChatIdd(chatId:Long):User?
+    @Query("select * from users u where u.chat_id = ?1", nativeQuery = true)
+    fun findByChatIdd(chatId: Long): User?
 
-       //  fun existsByEmptyOperator()
+    @Query(value = """select * from users u
+    where u.deleted=false
+     and u.is_active=true
+     and u.role='OPERATOR' and u.language=:language """,nativeQuery = true)
+    fun emptyOperator(language: String):User?
 }
-interface GroupRepository : BaseRepository<Group>{
-    @Query("select * from groups g where g.user_id = ?1 and g.is_active = true ", nativeQuery = true)
-    fun  getGroupByUserIdAndActive(userId:Long): Group?
 
-    @Query("select * from groups g where g.operator_id = ?1 and g.is_active = true and ", nativeQuery = true)
+interface GroupRepository : BaseRepository<Group> {
+    @Query("select * from groups g where g.user_id = ?1 and g.is_active = true ", nativeQuery = true)
+    fun getGroupByUserIdAndActive(userId: Long): Group?
+
+    @Query("select * from groups g where g.operator_id = ?1 and g.is_active = true", nativeQuery = true)
     fun  getGroupByOperatorIdAndActive(operatorId:Long): Group?
 
     @Query("""select * from groups g where g.is_active=true and g.language=:language and
-    g.operator_id is null and g.deleted = false and g.user_id!=:operatorId order by created_date limit 1""", nativeQuery = true)
+    g.operator_id is null and g.deleted = false order by created_date limit 1""", nativeQuery = true)
     fun  getGroupByOperatorAndLanguageAndActive(language: String): Group?
 
     @Query("""update  groups g  set is_active=false where g.operator_id=?1 and is_active=true""", nativeQuery = true)
@@ -61,8 +67,7 @@ interface GroupRepository : BaseRepository<Group>{
     @Query(value = "select (count(g) > 0) from groups g where g.is_active = true and g.operator_id = ?1",nativeQuery = true)
     fun existsByActiveAndOperatorId(operatorId:Long):Boolean
 
-   // fun existsByEmptyOperator()
-   // fun findByOperatorId(operatorId: Long):Group?
+    fun findByOperatorId(operatorId: Long):Group?
 }
 interface ContactRepository:BaseRepository<Contact>{
 
@@ -71,12 +76,13 @@ interface ContactRepository:BaseRepository<Contact>{
 interface MessageRepository:BaseRepository<MessageEntity>{
     @Query("""select * from message m where m.readed=false and m.user_id=:userId and 
         m.group_id=:groupId order by created_date""", nativeQuery = true)
-    fun getUserMessage(userId:Long,groupId:Long):List<MessageEntity>?
+    fun getUserMessage(userId:Long,groupId:Long):List<MessageEntity>
 }
-interface OperatorRepository:BaseRepository<Operator> {
+
+interface OperatorRepository : BaseRepository<Operator> {
     @Query(
         """select * from operator where deleted=false""", nativeQuery = true
     )
     fun getAllOperator( ): List<Operator>
-    fun existsByPhoneNumber(phoneNumber:String):Boolean
 }
+

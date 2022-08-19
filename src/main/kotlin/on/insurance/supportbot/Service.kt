@@ -14,8 +14,7 @@ interface UserService {
     fun get(userId: Long): Group
     fun backOperator(operator: User)
     fun operatorIsActive(operator: User)
-
-    fun checkOperator(contact: Contact,user: User):User
+    fun emptyOperator(user: User):User?
 }
 
 interface GroupService {
@@ -31,13 +30,11 @@ interface GroupService {
 interface MessageService{
     fun creat(message: String,group: Group,user: User)
     fun creat(message: String,group: Group,user: User,readed:Boolean)
-    fun getUserMessage(group: Group):List<MessageEntity>
-//    order date, readed=false,
-//    kiyin readed=true qilib quyasizlar
+    fun getUserMessage(group: Group):List<MessageEntity>?
 }
 
 interface ContactService {
-    fun saveContact(phoneNumber: String, username: String, user: User)
+    fun saveContact(phoneNumber: String, username: String, user: User):Contact
     fun checkContact(contact: Contact, user: User)
 }
 
@@ -47,6 +44,7 @@ interface OperatorService {
     fun get(id: Long): OperatorDto
     fun delete(id: Long)
     fun listOfOperator(): List<OperatorDto>
+
 }
 
 @Service
@@ -78,6 +76,7 @@ class MessageServiceImpl(
 class GroupServiceImpl(
     val groupRepository: GroupRepository,
     val userRepository: UserRepository,
+    val userService: UserService,
 ) : GroupService {
 
     override fun update(group: Group): Group {
@@ -90,9 +89,13 @@ class GroupServiceImpl(
 
 
     fun createGroup(user: User): Group {
-        val lang=user.language
-        return groupRepository.save(Group(user,null,user.language))
+        val emptyOperator = userService.emptyOperator(user)
+        emptyOperator?.run {  userService.backOperator(this)}
+        return groupRepository.save(Group(user,emptyOperator,user.language))
     }
+
+
+
     override fun getGroupByOperatorId(operator: User): Group {
         return groupRepository.getGroupByOperatorIdAndActive(operator.id!!)?.run { this } ?: Group(null,null,null)
     }
@@ -110,13 +113,15 @@ class GroupServiceImpl(
 }
 @Service
 class UserServiceImpl(
-    private val userRepository: UserRepository,
-    private val operatorRepository: OperatorRepository
+    private val userRepository: UserRepository
 ) : UserService {
     override fun getUser(chatId: Long): User {
         return userRepository.findByChatIdd(chatId)?.run { this } ?: createUser(chatId)
     }
 
+    override fun emptyOperator(user: User): User? {
+       return userRepository.emptyOperator(user.language.name)
+    }
 
     fun createUser(chatId: Long): User {
         return userRepository.save(User(chatId))
@@ -139,21 +144,13 @@ class UserServiceImpl(
         operator.isActive=true
         userRepository.save(operator)
     }
-
-    override fun checkOperator(contact: Contact, user: User): User {
-        val phoneNumber=contact.phoneNumber
-        if (operatorRepository.existsByPhoneNumber(phoneNumber)){
-            user.run { this.role=Role.OPERATOR }
-        }
-       return userRepository.save(user)
-    }
 }
 
 @Service
 class ContactServiceImpl(private val contactRepository: ContactRepository):ContactService{
-    override fun saveContact(phoneNumber: String, username: String, user: User) {
-            var contact= Contact(phoneNumber,user,username)
-             contact=contactRepository.save(contact)
+    override fun saveContact(phoneNumber: String, username: String, user: User):Contact {
+            val contact= Contact(phoneNumber,user,username)
+             return contactRepository.save(contact)
     }
 
     override fun checkContact(contact: Contact, user: User) {
@@ -177,6 +174,7 @@ class OperatorServiceImpl(
             repository.save(entity)
         }
     }
+
 
     override fun get(id: Long): OperatorDto = repository.findByIdNotDeleted(id)?.run { OperatorDto.toDto(this) }
         ?: throw NullPointerException("Couldn't find by id")

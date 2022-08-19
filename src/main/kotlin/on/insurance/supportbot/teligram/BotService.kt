@@ -26,9 +26,7 @@ class BotService(
     val roleOperator: RoleOperator,
     val roleAdmin: RoleAdmin,
     val contactService: ContactService,
-
 ) {
-    lateinit var operator: User
 
      fun massage(update: Update) {
         var chatId: Long = 0
@@ -45,16 +43,10 @@ class BotService(
             }
             BotStep.CONTACT->{
                 val contact = update.message.contact
-                contactService.saveContact(contact.phoneNumber,contact.firstName,user)
-                contactService.checkContact(contact.phoneNumber,user)
+                val saveContact = contactService.saveContact(contact.phoneNumber, contact.firstName, user)
                 sendMassage(chatId,"raxmat")
                 user.botStep=BotStep.QUEUE
                 userService.update(user)
-            }
-            BotStep.BEGIN->{
-                sendMassage(update.message.chatId,"Siz activ holga utdingiz",roleOperator.menuButton(""))
-                operator.botStep=BotStep.CHAT
-               roleOperator.begin()
             }
 
 
@@ -84,10 +76,8 @@ class BotService(
         when(botStep){
 
             BotStep.LANGUAGE->{
-                val contact = update.message.contact
                 myBot.deleteMassage(chatId,update)
                 sendMassage(chatId,"contactizni yuboring",getContact(""))
-             //   contactService.checkContact(contact.phoneNumber,user)
                 user.botStep=BotStep.CONTACT
                 user.language= Language.valueOf(data)
                 userService.update(user)
