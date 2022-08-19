@@ -59,7 +59,7 @@ class MessageServiceImpl(
         messageRepository.save(MessageEntity(user, group, message, user.language, readed))
     }
 
-    override fun getUserMessage(group: Group): List<MessageEntity>? {
+    override fun getUserMessage(group: Group): List<MessageEntity>{
             messageRepository.getUserMessage(group.user!!.id!!, group.id!!)?.run {
                 val list= mutableListOf<MessageEntity>()
                 for (entity in this){
@@ -96,9 +96,7 @@ class GroupServiceImpl(
 
 
     override fun getNewGroupByOperator(operator: User): Group? {
-        println("******************************************************************************")
-        println(operator.language.name)
-       return  groupRepository.getGroupByOperatorAndLanguageAndActive(operator.language.name,operator.id!!)?:Group(null,null,null)
+       return  groupRepository.getGroupByOperatorAndLanguageAndActive(operator.language.name)?:Group(null,null,null)
     }
 
     override fun deleteGroupByOperator(operator: User) {
