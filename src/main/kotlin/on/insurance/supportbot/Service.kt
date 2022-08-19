@@ -16,6 +16,7 @@ interface GroupService {
     fun getGroupByUserId(user: User): Group
     fun getNewGroupByOperator(operator: User):Group?
     fun getGroupByOperatorId(operator:User): Group?
+
     // groupni yopish
     fun deleteGroupByOperator(operator: User)
 
@@ -76,16 +77,18 @@ class GroupServiceImpl(
         return groupRepository.save(Group(user,null,user.language))
     }
     override fun getGroupByOperatorId(operator: User): Group {
-        return groupRepository.getGroupByOperatorIdAndActive(operator.id!!).run { this } ?: Group(  )
+        return groupRepository.getGroupByOperatorIdAndActive(operator.id!!)?.run { this } ?: Group(null,null,null)
     }
 
 
     override fun getNewGroupByOperator(operator: User): Group? {
-       return  groupRepository.getGroupByOperatorAndLanguageAndActive(operator.language)?:throw RuntimeException("bunday group yoq")
+       return  groupRepository.getGroupByOperatorAndLanguageAndActive(operator.language.toString())?:throw RuntimeException("bunday group yoq")
     }
 
     override fun deleteGroupByOperator(operator: User) {
-    groupRepository.deleteGroup(operator.id!!)
+        groupRepository.existsByActiveAndOperatorId(operator.id!!)
+            .ifTrue { groupRepository.deleteGroup(operator.id!!) }
+
     }
 }
 @Service

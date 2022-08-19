@@ -48,6 +48,6 @@ class MessageEntity(
 class Group(
     @ManyToOne var user: User?=null,
     @ManyToOne var operator: User? = null,
-    @Enumerated(EnumType.STRING) var language: Language=Language.UZ,
+    @Enumerated(EnumType.STRING) var language: Language?,
     var isActive: Boolean = true
 ) : BaseEntity()
