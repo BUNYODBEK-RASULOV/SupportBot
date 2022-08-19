@@ -33,7 +33,7 @@ class RoleOperator(
         operator = userFunc
 
         groupService.getGroupByOperatorId(operator)?.run { group = this }
-        scanButton(update.message.text)
+        update.message?.text?.run { scanButton(this) }
         when (operator.botStep) {
             BotStep.CHAT -> {
                 var user:User?=group.user
