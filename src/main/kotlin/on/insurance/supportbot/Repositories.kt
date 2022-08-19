@@ -67,5 +67,5 @@ interface ContactRepository:BaseRepository<Contact>{
 interface MessageRepository:BaseRepository<MessageEntity>{
     @Query("""select * from message m where m.readed=false and m.user_id=:userId and 
         m.group_id=:groupId order by created_date""", nativeQuery = true)
-    fun getUserMessage(userId:Long,groupId:Long):List<MessageEntity>
+    fun getUserMessage(userId:Long,groupId:Long):List<MessageEntity>?
 }

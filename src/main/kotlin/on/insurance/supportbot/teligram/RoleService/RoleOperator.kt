@@ -13,6 +13,7 @@ import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException
 
 @Service
 class RoleOperator(
@@ -41,10 +42,6 @@ class RoleOperator(
                     saveChat()
                     sendText()
                 }
-                else{
-                    botService.sendMassage(update.message.chatId,"Chat yangilandi",menuButton(""))
-                    operator.botStep=BotStep.CHAT
-                    }
             }
             BotStep.BACK->{
                 botService.sendMassage(update.message.chatId,"begin tugmasini bosing boshlash uchun",beginButton(""))
@@ -128,15 +125,18 @@ class RoleOperator(
     fun begin(){
         var opChatId=operator.chatId
         var operator1=operator
-        groupService.getNewGroupByOperator(operator)?.run {
-            var group1=groupService.getNewGroupByOperator(operator1)
-            val userMessage = messageService.getUserMessage(group1!!)
-            userMessage.forEach {
-                    botService.sendMassage(opChatId,it.massages)
-            }
-            group1.operator=operator1
-            group1.isActive=true
-            groupService.update(group1)
+        groupService.getNewGroupByOperator(operator1)?.run {
+            val group1=this
+            println(group1.toString())
+                messageService.getUserMessage(group1)?.run {
+                    val userMessage =this
+                    userMessage.forEach {
+                        botService.sendMassage(opChatId,it.massages)
+                    }
+                    group1.operator=operator1
+                    group1.isActive=true
+                    groupService.update(group1)
+                }
         }
 
     }
