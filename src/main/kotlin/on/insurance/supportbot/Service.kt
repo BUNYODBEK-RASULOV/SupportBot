@@ -19,23 +19,25 @@ interface UserService {
 interface GroupService {
     fun update(group: Group): Group
     fun getGroupByUserId(user: User): Group
-    fun getNewGroupByOperator(operator: User):Group?
-    fun getGroupByOperatorId(operator:User): Group?
+    fun getNewGroupByOperator(operator: User): Group?
+    fun getGroupByOperatorId(operator: User): Group?
+
     // groupni yopish
     fun deleteGroupByOperator(operator: User)
 
 }
-interface MessageService{
-    fun creat(message: String,group: Group,user: User)
-    fun creat(message: String,group: Group,user: User,readed:Boolean)
-    fun getUserMessage(user: User,group: Group):List<MessageEntity>
+
+interface MessageService {
+    fun creat(message: String, group: Group, user: User)
+    fun creat(message: String, group: Group, user: User, readed: Boolean)
+    fun getUserMessage(group: Group): List<MessageEntity>
 //    order date, readed=false,
 //    kiyin readed=true qilib quyasizlar
 }
 
-interface ContactService{
-    fun saveContact(phoneNumber:String,username:String,user: User)
-    fun checkContact(contact: Contact,user: User)
+interface ContactService {
+    fun saveContact(phoneNumber: String, username: String, user: User)
+    fun checkContact(contact: Contact, user: User)
 }
 
 interface OperatorService {
@@ -47,34 +49,32 @@ interface OperatorService {
 }
 
 @Service
- class MessageServiceImpl(
-    val messageRepository:MessageRepository
-    ):MessageService{
+class MessageServiceImpl(
+    val messageRepository: MessageRepository
+) : MessageService {
     override fun creat(message: String, group: Group, user: User) {
-        messageRepository.save(MessageEntity(user,group,message,user.language))
+        messageRepository.save(MessageEntity(user, group, message, user.language))
     }
 
     override fun creat(message: String, group: Group, user: User, readed: Boolean) {
-        messageRepository.save(MessageEntity(user,group,message,user.language,readed))
+        messageRepository.save(MessageEntity(user, group, message, user.language, readed))
     }
 
 
     override fun getUserMessage(group: Group): List<MessageEntity> {
-        val groupId=group.id
+        val groupId = group.id
         val messageEntityList = messageRepository.getUserMessage(group.user!!.id!!, groupId!!)
-        val list= mutableListOf<MessageEntity>()
-        for (entity in messageEntityList){
-            entity.readed=true
+        val list = mutableListOf<MessageEntity>()
+        for (entity in messageEntityList) {
+            entity.readed = true
             list.add(entity)
         }
         messageRepository.saveAll(list)
         return list
     }
 }
-=========
-}
 
->>>>>>>>> Temporary merge branch 2
+
 @Service
 class GroupServiceImpl(
     val groupRepository: GroupRepository,
@@ -86,26 +86,29 @@ class GroupServiceImpl(
     }
 
     override fun getGroupByUserId(user: User): Group {
-    return groupRepository.getGroupByUserIdAndActive(user.id!!).run { this } ?: createGroup(user)
+        return groupRepository.getGroupByUserIdAndActive(user.id!!).run { this } ?: createGroup(user)
     }
 
 
     fun createGroup(user: User): Group {
-        return groupRepository.save(Group(user,null,user.language))
+        return groupRepository.save(Group(user, null, user.language))
     }
+
     override fun getGroupByOperatorId(operator: User): Group {
-        return groupRepository.getGroupByOperatorIdAndActive(operator.id!!).run { this } ?: Group(  )
+        return groupRepository.getGroupByOperatorIdAndActive(operator.id!!).run { this } ?: Group()
     }
 
 
     override fun getNewGroupByOperator(operator: User): Group? {
-       return  groupRepository.getGroupByOperatorAndLanguageAndActive(operator.language)?:throw RuntimeException("bunday group yoq")
+        return groupRepository.getGroupByOperatorAndLanguageAndActive(operator.language)
+            ?: throw RuntimeException("bunday group yoq")
     }
 
     override fun deleteGroupByOperator(operator: User) {
-    groupRepository.deleteGroup(operator.id!!)
+        groupRepository.deleteGroup(operator.id!!)
     }
 }
+
 @Service
 class UserServiceImpl(
     private val userRepository: UserRepository
@@ -128,34 +131,34 @@ class UserServiceImpl(
     }
 
     override fun backOperator(operator: User) {
-        operator.isActive=false
+        operator.isActive = false
         userRepository.save(operator)
     }
 
     override fun operatorIsActive(operator: User) {
-        operator.isActive=true
+        operator.isActive = true
         userRepository.save(operator)
     }
 }
 
 @Service
-class ContactServiceImpl(private val contactRepository: ContactRepository):ContactService{
+class ContactServiceImpl(private val contactRepository: ContactRepository) : ContactService {
     override fun saveContact(phoneNumber: String, username: String, user: User) {
-            var contact= Contact(phoneNumber,user,username)
-             contact=contactRepository.save(contact)
+        var contact = Contact(phoneNumber, user, username)
+        contactRepository.save(contact)
     }
 
     override fun checkContact(contact: Contact, user: User) {
 
     }
+
+
 }
 
 
-
 class OperatorServiceImpl(
-    private val repository: OperatorRepository,
-    private val entity:EntityManager
-    ) : OperatorService {
+    private val repository: OperatorRepository
+) : OperatorService {
     override fun create(dto: OperatorCreateDto) {
         repository.save(dto.toEntity())
     }
@@ -177,20 +180,10 @@ class OperatorServiceImpl(
         repository.trash(id)
     }
 
-    override fun listOfOperator()= repository.findAllNotDeleted().map(OperatorDto.Companion::toDto)
+    override fun listOfOperator() = repository.findAllNotDeleted().map(OperatorDto.Companion::toDto)
 }
 
-@Service
-class ContactServiceImpl(private val contactRepository: ContactRepository) : ContactService {
-    override fun saveContact(phoneNumber: String, username: String, user: User) {
-        val contact = Contact(phoneNumber, user, username)
-        contactRepository.save(contact)
-    }
 
-    override fun checkContact(contact: Contact, user: User) {
-
-    }
-}
 
 
 
