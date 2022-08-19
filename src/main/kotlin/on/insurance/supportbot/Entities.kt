@@ -51,3 +51,8 @@ class Group(
     @Enumerated(EnumType.STRING) var language: Language?,
     var isActive: Boolean = true
 ) : BaseEntity()
+@Entity
+class Operator(
+    var name:String,
+   var phoneNumber:String,
+) : BaseEntity()

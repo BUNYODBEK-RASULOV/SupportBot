@@ -1,7 +1,12 @@
 package on.insurance.supportbot
 
 import on.insurance.supportbot.teligram.*
+import on.insurance.supportbot.teligram.Contact
+import on.insurance.supportbot.teligram.Group
+import on.insurance.supportbot.teligram.MessageEntity
+import on.insurance.supportbot.teligram.User
 import org.springframework.stereotype.Service
+import javax.persistence.EntityManager
 
 interface UserService {
     fun getUser(chatId: Long): User
@@ -24,24 +29,34 @@ interface GroupService {
 interface MessageService{
     fun creat(message: String,group: Group,user: User)
     fun creat(message: String,group: Group,user: User,readed:Boolean)
-    fun getUserMessage(group: Group):List<MessageEntity>?
+    fun getUserMessage(group: Group):List<MessageEntity>
+//    order date, readed=false,
+//    kiyin readed=true qilib quyasizlar
 }
 
-interface ContactService{
-    fun saveContact(phoneNumber:String,username:String,user: User)
-    fun checkContact(contact: Contact,user: User)
+interface ContactService {
+    fun saveContact(phoneNumber: String, username: String, user: User)
+    fun checkContact(contact: Contact, user: User)
+}
+
+interface OperatorService {
+    fun create(dto: OperatorCreateDto)
+    fun update(id: Long, dto: OperatorUpdateDto)
+    fun get(id: Long): OperatorDto
+    fun delete(id: Long)
+    fun listOfOperator(): List<OperatorDto>
 }
 
 @Service
- class MessageServiceImpl(
-    val messageRepository:MessageRepository
-    ):MessageService{
+class MessageServiceImpl(
+    val messageRepository: MessageRepository
+) : MessageService {
     override fun creat(message: String, group: Group, user: User) {
-        messageRepository.save(MessageEntity(user,group,message,user.language))
+        messageRepository.save(MessageEntity(user, group, message, user.language))
     }
 
     override fun creat(message: String, group: Group, user: User, readed: Boolean) {
-        messageRepository.save(MessageEntity(user,group,message,user.language,readed))
+        messageRepository.save(MessageEntity(user, group, message, user.language, readed))
     }
 
     override fun getUserMessage(group: Group): List<MessageEntity>? {
@@ -64,7 +79,6 @@ class GroupServiceImpl(
 ) : GroupService {
 
     override fun update(group: Group): Group {
-//        groupRepository.findById(group)
         return groupRepository.save(group)
     }
 
@@ -82,6 +96,7 @@ class GroupServiceImpl(
 
 
     override fun getNewGroupByOperator(operator: User): Group? {
+        println("******************************************************************************")
         println(operator.language.name)
        return  groupRepository.getGroupByOperatorAndLanguageAndActive(operator.language.name,operator.id!!)?:Group(null,null,null)
     }
@@ -135,6 +150,37 @@ class ContactServiceImpl(private val contactRepository: ContactRepository):Conta
 
     }
 }
+
+@Service
+class OperatorServiceImpl(
+    private val repository: OperatorRepository
+) : OperatorService {
+    override fun create(dto: OperatorCreateDto) {
+        repository.save(dto.toEntity())
+    }
+
+    override fun update(id: Long, dto: OperatorUpdateDto) {
+        val entity = repository.findByIdNotDeleted(id) ?: throw NullPointerException("we have not this operator")
+        dto.run {
+            name?.run { entity.name = this }
+            phoneNumber?.run { entity.phoneNumber = this }
+            repository.save(entity)
+        }
+    }
+
+    override fun get(id: Long): OperatorDto = repository.findByIdNotDeleted(id)?.run { OperatorDto.toDto(this) }
+        ?: throw NullPointerException("Couldn't find by id")
+
+
+    override fun delete(id: Long) {
+        repository.trash(id)
+    }
+
+    override fun listOfOperator() = repository.getAllOperator().map(OperatorDto.Companion::toDto)
+}
+
+
+
 
 
 
