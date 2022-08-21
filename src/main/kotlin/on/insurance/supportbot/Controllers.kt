@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/api/v1/operator")
 class OperatorController(private val service: OperatorService) {
     @PostMapping
-    fun create(@RequestBody dto:  OperatorCreateDto) = service.create(dto)
+    fun create(@RequestBody dto: OperatorCreateDto) = service.create(dto)
 
     @GetMapping("{id}")
     fun get(@PathVariable id: Long): OperatorDto = service.get(id)
@@ -21,7 +21,6 @@ class OperatorController(private val service: OperatorService) {
 
     @GetMapping("list")
     fun getAllList(): List<OperatorDto> = service.listOfOperator()
-
 
 
 }

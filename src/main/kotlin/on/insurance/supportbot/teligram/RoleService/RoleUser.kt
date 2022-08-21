@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow
 import java.awt.SystemColor.text
@@ -20,6 +21,8 @@ class RoleUser(
     val messageService: MessageService,
     val roleOperator: RoleOperator,
     val userService: UserService,
+    @Lazy
+    val myBot: MyBot,
 ) {
     lateinit var update: Update
     lateinit var user: User
@@ -31,33 +34,29 @@ class RoleUser(
         group = groupService.getGroupByUserId(user)
 
         update.message?.text?.run { scanButton(this) }
+
         when (user.botStep) {
             BotStep.CHAT -> {
                 saveChat()
                 sendText()
             }
-            BotStep.QUEUE->{
-                botService.sendMassage(update.message.chatId,"${group.operator?.run { "0" }?:{"10"}} navbattasiz",queueButton(""))
-                user.botStep=BotStep.CHAT
+            BotStep.BACK -> {
+                val remove = ReplyKeyboardRemove(true)
+                botService.sendMassage(update.message.chatId, "Operatorlarimiz tez orada bo'g'lanishadi", remove)
+                user.botStep = BotStep.CHAT
             }
         }
         userService.update(user)
 
     }
 
+
     fun saveChat() {
-        val text = update.message.text
-        messageService.creat(text, group, user,group.operator!=null)
+        messageService.creat(update, group, user, group.operator != null)
     }
 
     fun sendText() {
-        var chatId: Long = 0
-        var text: String = ""
-        update.message?.run {
-            chatId = getChatId()
-            text = getText()
-        }
-        group.operator?.run { botService.sendMassage(this.chatId, text,roleOperator.menuButton("")) }
+        group.operator?.run { myBot.forwardMessage(update,this.chatId) }
     }
 
     fun queueButton(lang: String): ReplyKeyboardMarkup = ReplyKeyboardMarkup().apply {
@@ -73,10 +72,10 @@ class RoleUser(
 
     }
 
-    fun scanButton(text:String){
-        when(text){
-            "navbatingizni bilish"->{
-                user.botStep=BotStep.QUEUE
+    fun scanButton(text: String) {
+        when (text) {
+            "navbatingizni bilish" -> {
+                user.botStep = BotStep.QUEUE
             }
         }
     }

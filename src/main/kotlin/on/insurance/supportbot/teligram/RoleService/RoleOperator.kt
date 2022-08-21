@@ -3,10 +3,7 @@ package on.insurance.supportbot.teligram.RoleService
 import on.insurance.supportbot.GroupService
 import on.insurance.supportbot.MessageService
 import on.insurance.supportbot.UserService
-import on.insurance.supportbot.teligram.BotService
-import on.insurance.supportbot.teligram.BotStep
-import on.insurance.supportbot.teligram.Group
-import on.insurance.supportbot.teligram.User
+import on.insurance.supportbot.teligram.*
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
 import org.telegram.telegrambots.meta.api.objects.Update
@@ -23,21 +20,23 @@ class RoleOperator(
     val messageService: MessageService,
     val userService: UserService,
     @Lazy
+    val myBot: MyBot,
+    @Lazy
     val roleUser: RoleUser,
 ) {
     lateinit var update: Update
     lateinit var operator: User
-    lateinit var group: Group
+    var group: Group?=null
 
     fun operatorFunc(updateFunc: Update,userFunc: User){
         update = updateFunc
         operator = userFunc
 
-        group = groupService.getGroupByOperatorId(operator)?.run {  this }!!
+        group = groupService.getGroupByOperatorId(operator)?.run {  this }
         update.message?.text?.run { scanButton(this) }
         when (operator.botStep) {
             BotStep.CHAT -> {
-                var user:User?=group.user
+                var user:User?=group?.user
                 if (user!=null){
                     saveChat()
                     sendText()
@@ -45,14 +44,21 @@ class RoleOperator(
             }
             BotStep.BACK->{
                 botService.sendMassage(update.message.chatId,"begin tugmasini bosing boshlash uchun",beginButton(""))
+                userService.backOperator(operator)
+                group?.run {
+                    group!!.isActive=false
+                    groupService.update(group!!)
+                }
             }
             BotStep.BEGIN->{
                 botService.sendMassage(update.message.chatId,"Siz activ holga utdingiz",menuButton(""))
+                userService.operatorIsActive(operator)
                 operator.botStep=BotStep.CHAT
                 begin()
             }
             BotStep.CLOSE->{
                 botService.sendMassage(update.message.chatId,"Chat yangilandi",menuButton(""))
+                userService.operatorIsActive(operator)
                 operator.botStep=BotStep.CHAT
                 begin()
             }
@@ -62,8 +68,7 @@ class RoleOperator(
     }
 
     fun saveChat() {
-        val text = update.message.text
-        messageService.creat(text, group, operator,true)
+        messageService.creat(update, group!!, operator,true)
     }
 
     fun sendText() {
@@ -73,7 +78,7 @@ class RoleOperator(
             chatId = getChatId()
             text = getText()
         }
-        group.user?.run { botService.sendMassage(this.chatId, text,roleUser.queueButton("")) }
+        group!!.user?.run { botService.sendMassage(this.chatId, text,) }
     }
 
     fun scanButton(text:String){
@@ -81,17 +86,16 @@ class RoleOperator(
         when(text){
             "yopish"->{
                 operator.botStep=BotStep.CLOSE
-                userService.operatorIsActive(operator)
-                groupService.deleteGroupByOperator(operator)
+                group?.run {
+                    group!!.isActive=false
+                    groupService.update(group!!)
+                }
             }
             "chiqish"->{
                 operator.botStep=BotStep.BACK
-                userService.backOperator(operator)
-                groupService.deleteGroupByOperator(operator)
             }
             "begin"->{
                 operator.botStep=BotStep.BEGIN
-                userService.operatorIsActive(operator)
             }
         }
     }
@@ -127,12 +131,13 @@ class RoleOperator(
         var opChatId=operator.chatId
         var operator1=operator
         groupService.getNewGroupByOperator(operator1)?.run {
+            userService.backOperator(operator1)
             val group1=this
-            println(group1.toString())
                 messageService.getUserMessage(group1)?.run {
                     val userMessage =this
                     userMessage.forEach {
-                        botService.sendMassage(opChatId,it.massages)
+                        myBot.forwardMessage(opChatId,it.chatId,it.massageId)
+//                        botService.sendMassage(opChatId,it.massages)
                     }
                     group1.operator=operator1
                     group1.isActive=true
