@@ -29,12 +29,14 @@ class User(
     var chatId: Long,
     @Enumerated(EnumType.STRING) var botStep: BotStep = BotStep.START,
     @Enumerated(EnumType.STRING) var language: Language = Language.UZ,
-    @Enumerated(EnumType.STRING) var role: Role = Role.USER,
+    @Enumerated(EnumType.STRING) var role: Role? = null,
     var isActive: Boolean = true
 ) : BaseEntity()
 
 @Entity(name = "message")
 data class MessageEntity(
+    val chatId:Long,
+    val massageId:Int,
     @ManyToOne var user: User,
     @ManyToOne var group: Group,
     var massages: String,
@@ -46,18 +48,14 @@ data class MessageEntity(
 
 @Entity(name = "groups")
 class Group(
-    @ManyToOne var user: User?=null,
+    @ManyToOne var user: User? = null,
     @ManyToOne var operator: User? = null,
     @Enumerated(EnumType.STRING) var language: Language?,
     var isActive: Boolean = true
 ) : BaseEntity()
+
 @Entity
 class Operator(
-    var name:String,
-    var phoneNumber:String,
-) : BaseEntity()
-@Entity
-class Operator(
-    var name:String,
-   var phoneNumber:String,
+    var name: String,
+    var phoneNumber: String,
 ) : BaseEntity()

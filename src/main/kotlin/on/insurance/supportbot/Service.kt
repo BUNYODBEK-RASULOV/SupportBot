@@ -6,6 +6,7 @@ import on.insurance.supportbot.teligram.Group
 import on.insurance.supportbot.teligram.MessageEntity
 import on.insurance.supportbot.teligram.User
 import org.springframework.stereotype.Service
+import org.telegram.telegrambots.meta.api.objects.Update
 import javax.persistence.EntityManager
 
 interface UserService {
@@ -14,27 +15,26 @@ interface UserService {
     fun get(userId: Long): Group
     fun backOperator(operator: User)
     fun operatorIsActive(operator: User)
-    fun emptyOperator(user: User):User?
+    fun emptyOperator(user: User): User?
+    fun checkOperator(contact: Contact, user: User): User
 }
 
 interface GroupService {
     fun update(group: Group): Group
     fun getGroupByUserId(user: User): Group
-    fun getNewGroupByOperator(operator: User):Group?
-    fun getGroupByOperatorId(operator:User): Group?
-
-    // groupni yopish
-    fun deleteGroupByOperator(operator: User)
+    fun getNewGroupByOperator(operator: User): Group?
+    fun getGroupByOperatorId(operator: User): Group?
 
 }
-interface MessageService{
-    fun creat(message: String,group: Group,user: User)
-    fun creat(message: String,group: Group,user: User,readed:Boolean)
-    fun getUserMessage(group: Group):List<MessageEntity>?
+
+interface MessageService {
+    fun creat(update: Update, group: Group, user: User)
+    fun creat(update: Update, group: Group, user: User, readed: Boolean)
+    fun getUserMessage(group: Group): List<MessageEntity>?
 }
 
 interface ContactService {
-    fun saveContact(phoneNumber: String, username: String, user: User):Contact
+    fun saveContact(phoneNumber: String, username: String, user: User): Contact
     fun checkContact(contact: Contact, user: User)
 }
 
@@ -51,27 +51,45 @@ interface OperatorService {
 class MessageServiceImpl(
     val messageRepository: MessageRepository
 ) : MessageService {
-    override fun creat(message: String, group: Group, user: User) {
-        messageRepository.save(MessageEntity(user, group, message, user.language))
+    override fun creat(update: Update, group: Group, user: User) {
+        var chatId:Long=1
+        var massageId:Int=0
+        var massage:String=""
+        update.message?.run {
+            chatId=this.chatId
+            massageId=this.messageId
+            massage=this.text
+        }
+
+        messageRepository.save(MessageEntity(chatId,massageId,user, group, massage, user.language))
     }
 
-    override fun creat(message: String, group: Group, user: User, readed: Boolean) {
-        messageRepository.save(MessageEntity(user, group, message, user.language, readed))
+    override fun creat(update: Update, group: Group, user: User, readed: Boolean) {
+        var chatId:Long=1
+        var massageId:Int=0
+        var massage:String=""
+        update.message?.run {
+            chatId=this.chatId
+            massageId=this.messageId
+            massage=this.text
+        }
+        messageRepository.save(MessageEntity(chatId,massageId,user, group, massage, user.language, readed))
     }
 
-    override fun getUserMessage(group: Group): List<MessageEntity>{
-            messageRepository.getUserMessage(group.user!!.id!!, group.id!!)?.run {
-                val list= mutableListOf<MessageEntity>()
-                for (entity in this){
-                    entity.readed=true
-                    list.add(entity)
-                }
-                messageRepository.saveAll(list)
-                return list
+    override fun getUserMessage(group: Group): List<MessageEntity> {
+        messageRepository.getUserMessage(group.user!!.id!!, group.id!!)?.run {
+            val list = mutableListOf<MessageEntity>()
+            for (entity in this) {
+                entity.readed = true
+                list.add(entity)
             }
+            messageRepository.saveAll(list)
+            return list
+        }
         return emptyList()
     }
 }
+
 @Service
 class GroupServiceImpl(
     val groupRepository: GroupRepository,
@@ -84,43 +102,39 @@ class GroupServiceImpl(
     }
 
     override fun getGroupByUserId(user: User): Group {
-    return groupRepository.getGroupByUserIdAndActive(user.id!!).run { this } ?: createGroup(user)
+        return groupRepository.getGroupByUserIdAndActive(user.id!!).run { this } ?: createGroup(user)
     }
 
 
     fun createGroup(user: User): Group {
         val emptyOperator = userService.emptyOperator(user)
-        emptyOperator?.run {  userService.backOperator(this)}
-        return groupRepository.save(Group(user,emptyOperator,user.language))
+        emptyOperator?.run { userService.backOperator(this) }
+        return groupRepository.save(Group(user, emptyOperator, user.language))
     }
 
 
-
-    override fun getGroupByOperatorId(operator: User): Group {
-        return groupRepository.getGroupByOperatorIdAndActive(operator.id!!)?.run { this } ?: Group(null,null,null)
+    override fun getGroupByOperatorId(operator: User): Group? {
+        return groupRepository.getGroupByOperatorIdAndActive(operator.id!!)?.run { this }
     }
 
 
     override fun getNewGroupByOperator(operator: User): Group? {
-       return  groupRepository.getGroupByOperatorAndLanguageAndActive(operator.language.name)?:Group(null,null,null)
+        return groupRepository.getGroupByOperatorAndLanguageAndActive(operator.language.name)?.run { this }
     }
 
-    override fun deleteGroupByOperator(operator: User) {
-        groupRepository.existsByActiveAndOperatorId(operator.id!!)
-            .ifTrue { groupRepository.deleteGroup(operator.id!!) }
-
-    }
 }
+
 @Service
 class UserServiceImpl(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val operatorRepository: OperatorRepository
 ) : UserService {
     override fun getUser(chatId: Long): User {
         return userRepository.findByChatIdd(chatId)?.run { this } ?: createUser(chatId)
     }
 
     override fun emptyOperator(user: User): User? {
-       return userRepository.emptyOperator(user.language.name)
+        return userRepository.emptyOperator(user.language.name)
     }
 
     fun createUser(chatId: Long): User {
@@ -136,21 +150,31 @@ class UserServiceImpl(
     }
 
     override fun backOperator(operator: User) {
-        operator.isActive=false
+        operator.isActive = false
         userRepository.save(operator)
     }
 
     override fun operatorIsActive(operator: User) {
-        operator.isActive=true
+        operator.isActive = true
         userRepository.save(operator)
+    }
+
+    override fun checkOperator(contact: Contact, user: User): User {
+        val phoneNumber = contact.phoneNumber
+        if (operatorRepository.existsByPhoneNumber(phoneNumber)) {
+            user.run { this.role = Role.OPERATOR }
+        } else {
+            user.role = Role.USER
+        }
+        return user
     }
 }
 
 @Service
-class ContactServiceImpl(private val contactRepository: ContactRepository):ContactService{
-    override fun saveContact(phoneNumber: String, username: String, user: User):Contact {
-            val contact= Contact(phoneNumber,user,username)
-             return contactRepository.save(contact)
+class ContactServiceImpl(private val contactRepository: ContactRepository) : ContactService {
+    override fun saveContact(phoneNumber: String, username: String, user: User): Contact {
+        val contact = Contact(phoneNumber, user, username)
+        return contactRepository.save(contact)
     }
 
     override fun checkContact(contact: Contact, user: User) {
