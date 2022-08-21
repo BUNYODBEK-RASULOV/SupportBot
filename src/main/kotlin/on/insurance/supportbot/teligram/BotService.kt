@@ -12,6 +12,7 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow
@@ -28,67 +29,72 @@ class BotService(
     val contactService: ContactService,
 ) {
 
-     fun massage(update: Update) {
+    fun massage(update: Update) {
         var chatId: Long = 0
         update.run {
             chatId = message.chatId
         }
         var user = userService.getUser(chatId)
 
-        when(user.botStep){
-            BotStep.START->{
-                sendMassage(chatId,"tilni tanlang",languageButtons())
-                user.botStep=BotStep.LANGUAGE
+        when (user.botStep) {
+            BotStep.START -> {
+                sendMassage(chatId, "tilni tanlang", languageButtons())
+                user.botStep = BotStep.LANGUAGE
                 userService.update(user)
             }
-            BotStep.CONTACT->{
+            BotStep.CONTACT -> {
                 val contact = update.message.contact
                 val saveContact = contactService.saveContact(contact.phoneNumber, contact.firstName, user)
-                sendMassage(chatId,"raxmat")
-                user.botStep=BotStep.QUEUE
+                user = userService.checkOperator(saveContact, user)
+                user.botStep = BotStep.BACK
                 userService.update(user)
             }
-
 
 
         }
 
-        when(user.role){
-            Role.USER->{roleUser.userFunc(update,user)
-            return}
-            Role.OPERATOR ->{ roleOperator.operatorFunc(update, user)
-            return}
-            Role.ADMIN ->{ roleAdmin.adminFunc(update, user)
-            return}
+        when (user.role) {
+            Role.USER -> {
+                roleUser.userFunc(update, user)
+                return
+            }
+            Role.OPERATOR -> {
+                roleOperator.operatorFunc(update, user)
+                return
+            }
+            Role.ADMIN -> {
+                roleAdmin.adminFunc(update, user)
+                return
+            }
         }
     }
 
-    fun inline(update: Update){
+    fun inline(update: Update) {
         var chatId: Long = 0
         var data = ""
         update.run {
-            chatId=callbackQuery.message.chatId
-            data=callbackQuery.data
+            chatId = callbackQuery.message.chatId
+            data = callbackQuery.data
         }
-        var user = userService.getUser(chatId)
-        var botStep = user.botStep
+        val user = userService.getUser(chatId)
+        val botStep = user.botStep
 
-        when(botStep){
+        when (botStep) {
 
-            BotStep.LANGUAGE->{
-                myBot.deleteMassage(chatId,update)
-                sendMassage(chatId,"contactizni yuboring",getContact(""))
-                user.botStep=BotStep.CONTACT
-                user.language= Language.valueOf(data)
+            BotStep.LANGUAGE -> {
+                deleteMessage(update)
+                sendMassage(chatId, "contactizni yuboring", getContact(""))
+                user.botStep = BotStep.CONTACT
+                user.language = Language.valueOf(data)
                 userService.update(user)
             }
         }
     }
 
 
-    fun sendMassage(chatId: Long, text: String,inlineKeyboardMarkup: InlineKeyboardMarkup?) {
+    fun sendMassage(chatId: Long, text: String, inlineKeyboardMarkup: InlineKeyboardMarkup?) {
         val sendMessage = SendMessage(chatId.toString(), text)
-        inlineKeyboardMarkup?.run { sendMessage.replyMarkup=this }
+        inlineKeyboardMarkup?.run { sendMessage.replyMarkup = this }
         sendMessage.enableMarkdown(true)
         myBot.execute(sendMessage) ?: throw TelegramApiException("xatolik")
     }
@@ -99,20 +105,27 @@ class BotService(
         myBot.execute(sendMessage) ?: throw TelegramApiException("xatolik")
     }
 
-    fun sendMassage(chatId: Long, text: String,replyKeyboardMarkup: ReplyKeyboardMarkup) {
+    fun sendMassage(chatId: Long, text: String, replyKeyboardMarkup: ReplyKeyboardMarkup) {
         val sendMessage = SendMessage(chatId.toString(), text)
-        sendMessage.replyMarkup=replyKeyboardMarkup
+        sendMessage.replyMarkup = replyKeyboardMarkup
         sendMessage.enableMarkdown(true)
         myBot.execute(sendMessage) ?: throw TelegramApiException("xatolik")
     }
 
-    fun languageButtons():InlineKeyboardMarkup{
+    fun sendMassage(chatId: Long, text: String, remove: ReplyKeyboardRemove) {
+        val sendMessage = SendMessage(chatId.toString(), text)
+        sendMessage.replyMarkup = remove
+        sendMessage.enableMarkdown(true)
+        myBot.execute(sendMessage) ?: throw TelegramApiException("xatolik")
+    }
+
+    fun languageButtons(): InlineKeyboardMarkup {
         val inlineKeyboardMarkup = InlineKeyboardMarkup()
-        val keyboardButtons= mutableListOf<InlineKeyboardButton>()
+        val keyboardButtons = mutableListOf<InlineKeyboardButton>()
         val buttons = listOf<Language>(Language.UZ, Language.RU, Language.ENG)
         buttons.forEach {
             val inlineKeyboardButton = InlineKeyboardButton()
-            inlineKeyboardButton.text =it.name
+            inlineKeyboardButton.text = it.name
             inlineKeyboardButton.callbackData = it.name
             keyboardButtons.add(inlineKeyboardButton);
         }
@@ -133,5 +146,20 @@ class BotService(
             }
         )))
 
+    }
+
+    fun deleteMessage(update: Update) {
+        var mesId: Int = 0
+        var chatId: Long = 0
+        update.callbackQuery?.run {
+             chatId = message.chatId
+            mesId = message.messageId
+        }
+        update.message?.run {
+            chatId=getChatId()
+            mesId=messageId
+        }
+        var deleteMessage = DeleteMessage(chatId.toString(), mesId)
+        myBot.execute(deleteMessage) ?: throw TelegramApiException("xatolik")
     }
 }

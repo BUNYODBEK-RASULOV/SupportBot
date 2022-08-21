@@ -20,7 +20,7 @@ data class OperatorUpdateDto(
 data class OperatorDto(
     var id: Long,
     var name: String,
-    var phoneNumber:String
+    var phoneNumber: String
 
 ) {
     companion object {
