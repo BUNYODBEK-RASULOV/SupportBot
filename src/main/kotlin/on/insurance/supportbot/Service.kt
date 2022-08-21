@@ -17,6 +17,10 @@ interface UserService {
     fun operatorIsActive(operator: User)
     fun emptyOperator(user: User): User?
     fun checkOperator(contact: Contact, user: User): User
+
+    fun checkOperator(contact: Contact,user: User):User
+
+    fun operatorList():List<User>
 }
 
 interface GroupService {
@@ -25,12 +29,23 @@ interface GroupService {
     fun getNewGroupByOperator(operator: User): Group?
     fun getGroupByOperatorId(operator: User): Group?
 
+    fun deleteGroupByOperator(operator: User)
+    //operator_id buyicha groupList
+    fun getAllGroupListByOperatorId(operatorId:Long): List<Group>
+
 }
 
 interface MessageService {
     fun creat(update: Update, group: Group, user: User)
     fun creat(update: Update, group: Group, user: User, readed: Boolean)
     fun getUserMessage(group: Group): List<MessageEntity>?
+interface MessageService{
+    fun creat(message: String,group: Group,user: User)
+    fun creat(message: String,group: Group,user: User,readed:Boolean)
+    fun getUserMessage(group: Group):List<MessageEntity>
+
+    //messagelar Listini group id buyicha olish
+    fun getAllMessageByGroupId(groupId:Long):List<MessageEntity>
 }
 
 interface ContactService {
@@ -88,6 +103,10 @@ class MessageServiceImpl(
         }
         return emptyList()
     }
+
+    override fun getAllMessageByGroupId(groupId: Long): List<MessageEntity> {
+      return  messageRepository.getAllMessageByGroupId(groupId)
+    }
 }
 
 @Service
@@ -122,6 +141,11 @@ class GroupServiceImpl(
         return groupRepository.getGroupByOperatorAndLanguageAndActive(operator.language.name)?.run { this }
     }
 
+    override fun deleteGroupByOperator(operator: User) {
+        groupRepository.existsByActiveAndOperatorId(operator.id!!)
+            .ifTrue { groupRepository.deleteGroup(operator.id!!) }
+
+    }
 }
 
 @Service
@@ -168,6 +192,10 @@ class UserServiceImpl(
         }
         return user
     }
+
+    override fun operatorList(): List<User> {
+      return  userRepository.getAllOperatorListByRole()
+    }
 }
 
 @Service
@@ -198,7 +226,6 @@ class OperatorServiceImpl(
             repository.save(entity)
         }
     }
-
 
     override fun get(id: Long): OperatorDto = repository.findByIdNotDeleted(id)?.run { OperatorDto.toDto(this) }
         ?: throw NullPointerException("Couldn't find by id")
