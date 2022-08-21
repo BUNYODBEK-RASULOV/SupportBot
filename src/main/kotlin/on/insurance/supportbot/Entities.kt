@@ -56,8 +56,3 @@ class Operator(
     var name:String,
     var phoneNumber:String,
 ) : BaseEntity()
-@Entity
-class Operator(
-    var name:String,
-   var phoneNumber:String,
-) : BaseEntity()

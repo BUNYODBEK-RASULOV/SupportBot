@@ -16,6 +16,8 @@ interface UserService {
     fun operatorIsActive(operator: User)
 
     fun checkOperator(contact: Contact,user: User):User
+
+    fun operatorList():List<User>
 }
 
 interface GroupService {
@@ -23,17 +25,19 @@ interface GroupService {
     fun getGroupByUserId(user: User): Group
     fun getNewGroupByOperator(operator: User):Group?
     fun getGroupByOperatorId(operator:User): Group?
-
     // groupni yopish
     fun deleteGroupByOperator(operator: User)
+    //operator_id buyicha groupList
+    fun getAllGroupListByOperatorId(operatorId:Long): List<Group>
 
 }
 interface MessageService{
     fun creat(message: String,group: Group,user: User)
     fun creat(message: String,group: Group,user: User,readed:Boolean)
     fun getUserMessage(group: Group):List<MessageEntity>
-//    order date, readed=false,
-//    kiyin readed=true qilib quyasizlar
+
+    //messagelar Listini group id buyicha olish
+    fun getAllMessageByGroupId(groupId:Long):List<MessageEntity>
 }
 
 interface ContactService {
@@ -46,7 +50,6 @@ interface OperatorService {
     fun update(id: Long, dto: OperatorUpdateDto)
     fun get(id: Long): OperatorDto
     fun delete(id: Long)
-    fun listOfOperator(): List<OperatorDto>
 }
 
 @Service
@@ -72,6 +75,10 @@ class MessageServiceImpl(
                 return list
             }
         return emptyList()
+    }
+
+    override fun getAllMessageByGroupId(groupId: Long): List<MessageEntity> {
+      return  messageRepository.getAllMessageByGroupId(groupId)
     }
 }
 @Service
@@ -106,6 +113,10 @@ class GroupServiceImpl(
         groupRepository.existsByActiveAndOperatorId(operator.id!!)
             .ifTrue { groupRepository.deleteGroup(operator.id!!) }
 
+    }
+
+    override fun getAllGroupListByOperatorId(operatorId: Long): List<Group> {
+      return  groupRepository.getAllGroupByOperatorId(operatorId)
     }
 }
 @Service
@@ -147,6 +158,10 @@ class UserServiceImpl(
         }
        return userRepository.save(user)
     }
+
+    override fun operatorList(): List<User> {
+      return  userRepository.getAllOperatorListByRole()
+    }
 }
 
 @Service
@@ -185,8 +200,6 @@ class OperatorServiceImpl(
     override fun delete(id: Long) {
         repository.trash(id)
     }
-
-    override fun listOfOperator() = repository.getAllOperator().map(OperatorDto.Companion::toDto)
 }
 
 
