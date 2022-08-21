@@ -17,9 +17,6 @@ interface UserService {
     fun operatorIsActive(operator: User)
     fun emptyOperator(user: User): User?
     fun checkOperator(contact: Contact, user: User): User
-
-    fun checkOperator(contact: Contact,user: User):User
-
     fun operatorList():List<User>
 }
 
@@ -29,21 +26,15 @@ interface GroupService {
     fun getNewGroupByOperator(operator: User): Group?
     fun getGroupByOperatorId(operator: User): Group?
 
-    fun deleteGroupByOperator(operator: User)
     //operator_id buyicha groupList
     fun getAllGroupListByOperatorId(operatorId:Long): List<Group>
 
 }
 
-interface MessageService {
-    fun creat(update: Update, group: Group, user: User)
-    fun creat(update: Update, group: Group, user: User, readed: Boolean)
-    fun getUserMessage(group: Group): List<MessageEntity>?
 interface MessageService{
-    fun creat(message: String,group: Group,user: User)
-    fun creat(message: String,group: Group,user: User,readed:Boolean)
+    fun creat(update: Update,group: Group,user: User)
+    fun creat(update: Update,group: Group,user: User,readed:Boolean)
     fun getUserMessage(group: Group):List<MessageEntity>
-
     //messagelar Listini group id buyicha olish
     fun getAllMessageByGroupId(groupId:Long):List<MessageEntity>
 }
@@ -112,7 +103,6 @@ class MessageServiceImpl(
 @Service
 class GroupServiceImpl(
     val groupRepository: GroupRepository,
-    val userRepository: UserRepository,
     val userService: UserService,
 ) : GroupService {
 
@@ -141,10 +131,10 @@ class GroupServiceImpl(
         return groupRepository.getGroupByOperatorAndLanguageAndActive(operator.language.name)?.run { this }
     }
 
-    override fun deleteGroupByOperator(operator: User) {
-        groupRepository.existsByActiveAndOperatorId(operator.id!!)
-            .ifTrue { groupRepository.deleteGroup(operator.id!!) }
 
+
+    override fun getAllGroupListByOperatorId(operatorId: Long): List<Group> {
+        TODO("Not yet implemented")
     }
 }
 
@@ -193,7 +183,7 @@ class UserServiceImpl(
         return user
     }
 
-    override fun operatorList(): List<User> {
+    override fun operatorList(): List<User>{
       return  userRepository.getAllOperatorListByRole()
     }
 }

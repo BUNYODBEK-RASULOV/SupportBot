@@ -43,7 +43,7 @@ interface UserRepository : BaseRepository<User> {
     @Query("select * from users u where u.chat_id = ?1", nativeQuery = true)
     fun findByChatIdd(chatId: Long): User?
 
-        @Query("select u from User u where u.role ='OPERATOR'")
+        @Query("select * from users u where u.role ='OPERATOR'",nativeQuery = true)
         fun getAllOperatorListByRole():List<User>
     @Query(
         value = """select * from users u
@@ -78,21 +78,16 @@ interface ContactRepository : BaseRepository<Contact> {
 
 }
 
-interface MessageRepository:BaseRepository<MessageEntity>{
-    @Query("""select * from message m where m.readed=false and m.user_id=:userId and 
-        m.group_id=:groupId order by created_date""", nativeQuery = true)
-    fun getUserMessage(userId:Long,groupId:Long):List<MessageEntity>?
-
-    @Query("""select * from message m where m.group_id=?1 order by created_date""", nativeQuery = true)
-    fun getAllMessageByGroupId(groupId: Long):List<MessageEntity>
-interface MessageRepository : BaseRepository<MessageEntity> {
+interface MessageRepository:BaseRepository<MessageEntity> {
     @Query(
         """select * from message m where m.readed=false and m.user_id=:userId and 
         m.group_id=:groupId order by created_date""", nativeQuery = true
     )
-    fun getUserMessage(userId: Long, groupId: Long): List<MessageEntity>
-}
+    fun getUserMessage(userId: Long, groupId: Long): List<MessageEntity>?
 
+    @Query("""select * from message m where m.group_id=?1 order by created_date""", nativeQuery = true)
+    fun getAllMessageByGroupId(groupId: Long): List<MessageEntity>
+}
 interface OperatorRepository : BaseRepository<Operator> {
 
     @Query("select (count(o) > 0) from Operator o where o.phoneNumber = ?1")
@@ -103,4 +98,5 @@ interface OperatorRepository : BaseRepository<Operator> {
     )
     fun getAllOperator(): List<Operator>
 }
+
 
