@@ -4,6 +4,7 @@ import on.insurance.supportbot.GroupService
 import on.insurance.supportbot.MessageService
 import on.insurance.supportbot.UserService
 import on.insurance.supportbot.teligram.*
+import on.insurance.supportbot.teligram.Message.YOU_HAVE_CONTACTED_THE_OPERATOR
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
 import org.telegram.telegrambots.meta.api.objects.Update
@@ -42,7 +43,7 @@ class RoleUser(
             }
             BotStep.BACK -> {
                 val remove = ReplyKeyboardRemove(true)
-                botService.sendMassage(update.message.chatId, "Operatorlarimiz tez orada bo'g'lanishadi", remove)
+                botService.sendMassage(update.message.chatId, YOU_HAVE_CONTACTED_THE_OPERATOR[user.language]!!, remove)
                 user.botStep = BotStep.CHAT
             }
         }

@@ -3,6 +3,7 @@ package on.insurance.supportbot.teligram
 
 import on.insurance.supportbot.ContactService
 import on.insurance.supportbot.UserService
+import on.insurance.supportbot.teligram.Message.*
 import on.insurance.supportbot.teligram.RoleService.RoleAdmin
 import on.insurance.supportbot.teligram.RoleService.RoleOperator
 import on.insurance.supportbot.teligram.RoleService.RoleUser
@@ -38,7 +39,12 @@ class BotService(
 
         when (user.botStep) {
             BotStep.START -> {
-                sendMassage(chatId, "tilni tanlang", languageButtons())
+                when (update.message.from.languageCode) {
+                    "uz" -> user.language=Language.UZ
+                    "ru" -> user.language=Language.RU
+                    else -> user.language=Language.ENG
+                }
+                sendMassage(chatId, LANGUAGE[user.language]!!, languageButtons())
                 user.botStep = BotStep.LANGUAGE
                 userService.update(user)
             }
@@ -49,8 +55,6 @@ class BotService(
                 user.botStep = BotStep.BACK
                 userService.update(user)
             }
-
-
         }
 
         when (user.role) {
@@ -83,9 +87,9 @@ class BotService(
 
             BotStep.LANGUAGE -> {
                 deleteMessage(update)
-                sendMassage(chatId, "contactizni yuboring", getContact(""))
-                user.botStep = BotStep.CONTACT
                 user.language = Language.valueOf(data)
+                sendMassage(chatId,CONTACT[user.language]!!, getContact(SHARE_CONTACT[user.language]!!))
+                user.botStep = BotStep.CONTACT
                 userService.update(user)
             }
         }
@@ -125,7 +129,7 @@ class BotService(
         val buttons = listOf<Language>(Language.UZ, Language.RU, Language.ENG)
         buttons.forEach {
             val inlineKeyboardButton = InlineKeyboardButton()
-            inlineKeyboardButton.text = it.name
+            inlineKeyboardButton.text = it.value
             inlineKeyboardButton.callbackData = it.name
             keyboardButtons.add(inlineKeyboardButton);
         }
@@ -141,7 +145,7 @@ class BotService(
         selective = false
         keyboard = mutableListOf(KeyboardRow(listOf(
             KeyboardButton().apply {
-                text = "share contact"
+                text = lang
                 requestContact = true
             }
         )))

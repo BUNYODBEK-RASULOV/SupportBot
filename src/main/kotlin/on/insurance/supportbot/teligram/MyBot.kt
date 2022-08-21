@@ -30,25 +30,7 @@ class MyBot(
         update.message?.run { botService.massage(update) }
     }
 
-    fun deleteMassage(chatId: Long, update: Update) {
-        var chatId: Long = 0
-        var messageId: Int = 1
-        update.callbackQuery?.run {
-            chatId = message.chatId
-            messageId = message.messageId
-        }
-        update.message?.run {
-            chatId = getChatId()
-            messageId = getMessageId()
-        }
 
-        val deleteMessage = DeleteMessage(chatId.toString(), messageId)
-        try {
-            execute(deleteMessage)
-        } catch (tae: TelegramApiException) {
-            throw RuntimeException(tae)
-        }
-    }
 
     fun forwardMessage(update: Update,chat_id:Long){
         var from_chat_id: Long = 0
