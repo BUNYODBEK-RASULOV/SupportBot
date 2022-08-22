@@ -56,20 +56,10 @@ class BotService(
                 userService.update(user)
             }
         }
-
         when (user.role) {
-            Role.USER -> {
-                roleUser.userFunc(update, user)
-                return
-            }
-            Role.OPERATOR -> {
-                roleOperator.operatorFunc(update, user)
-                return
-            }
-            Role.ADMIN -> {
-                roleAdmin.adminFunc(update, user)
-                return
-            }
+            Role.USER -> roleUser.userFunc(update, user)
+            Role.OPERATOR ->roleOperator.operatorFunc(update, user)
+            Role.ADMIN -> roleAdmin.adminFunc(update, user)
         }
     }
 
@@ -93,6 +83,11 @@ class BotService(
                 userService.update(user)
             }
         }
+
+        when (user.role){
+            Role.USER -> roleUser.inlineFunk(update, user)
+        }
+
     }
 
 

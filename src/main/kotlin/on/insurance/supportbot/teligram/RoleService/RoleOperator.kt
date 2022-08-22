@@ -8,7 +8,9 @@ import on.insurance.supportbot.teligram.Message.*
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
 import org.telegram.telegrambots.meta.api.objects.Update
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException
@@ -88,12 +90,22 @@ class RoleOperator(
             CLOSE[operator.language]->{
                 operator.botStep=BotStep.CLOSE
                 group?.run {
+                    botService.sendMassage(user!!.chatId,GIVE_THE_OPERATOR_MARK[user!!.language]!!,ballButtons())
+                    user!!.botStep=BotStep.BALL
+                    userService.update(user!!)
                     group!!.isActive=false
                     groupService.update(group!!)
                 }
             }
             EXIT[operator.language]->{
                 operator.botStep=BotStep.BACK
+                group?.run {
+                    botService.sendMassage(user!!.chatId,GIVE_THE_OPERATOR_MARK[user!!.language]!!,ballButtons())
+                    user!!.botStep=BotStep.BALL
+                    userService.update(user!!)
+                    group!!.isActive=false
+                    groupService.update(group!!)
+                }
             }
             BEGIN[operator.language]->{
                 operator.botStep=BotStep.BEGIN
@@ -122,7 +134,6 @@ class RoleOperator(
         selective = false
         keyboard = mutableListOf(KeyboardRow(listOf(
             KeyboardButton().apply {
-                println("11111111111111111"+BEGIN[lang]!!)
                 text =BEGIN[lang]!!
             }
         )))
@@ -146,5 +157,26 @@ class RoleOperator(
                 }
         }
 
+    }
+
+    fun ballButtons(): InlineKeyboardMarkup {
+        var inlineKeyboardMarkup = InlineKeyboardMarkup()
+        var rowList: MutableList<List<InlineKeyboardButton>> = ArrayList()
+        var keyboardButtons = mutableListOf<InlineKeyboardButton>()
+        for(i in 1..5){
+            val inlineKeyboardButton = InlineKeyboardButton()
+            inlineKeyboardButton.text = i.toString()
+            inlineKeyboardButton.callbackData = i.toString()
+            keyboardButtons.add(inlineKeyboardButton);
+        }
+        rowList.add(keyboardButtons)
+        var keyboardButtons2 = mutableListOf<InlineKeyboardButton>()
+        val inlineKeyboardButton = InlineKeyboardButton()
+        inlineKeyboardButton.text = "next"
+        inlineKeyboardButton.callbackData = "0"
+        keyboardButtons2.add(inlineKeyboardButton);
+        rowList.add(keyboardButtons2)
+        inlineKeyboardMarkup.setKeyboard(rowList);
+        return inlineKeyboardMarkup
     }
 }
