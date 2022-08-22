@@ -5,7 +5,7 @@ enum class BotStep {
     LANGUAGE,
     CONTACT,
     CHAT, QUEUE,
-    CLOSE, BEGIN, BACK
+    CLOSE, BEGIN, BACK, BALL,
 
 }
 
@@ -32,7 +32,8 @@ enum class Message(
     YOU_ARE_ENABLED("You are enabled","Siz activ holga O'tdingiz","Вы включены","You are enabled"),
     NEW_CHAT("new chat","Chat yangilandi","Чат обновлен","new chat"),
     CLOSE("close","yopish ❌","закрыть ❌","close ❌"),
-    EXIT("exit","chiqish \uD83D\uDE80","выход \uD83D\uDE80","exit \uD83D\uDE80");
+    EXIT("exit","chiqish \uD83D\uDE80","выход \uD83D\uDE80","exit \uD83D\uDE80"),
+    GIVE_THE_OPERATOR_MARK("give the operator a score","operatorga ball bering","дайте оператору очки","give the operator a score");
     open operator fun get(language:Language): String? {
         if (language.name == "UZ") return uz
         return if (language.name == "RU") ru else this.eng

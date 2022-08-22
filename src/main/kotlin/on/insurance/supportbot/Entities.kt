@@ -51,7 +51,8 @@ class Group(
     @ManyToOne var user: User? = null,
     @ManyToOne var operator: User? = null,
     @Enumerated(EnumType.STRING) var language: Language?,
-    var isActive: Boolean = true
+    var isActive: Boolean = true,
+    var ball:Int=0,
 ) : BaseEntity()
 
 @Entity

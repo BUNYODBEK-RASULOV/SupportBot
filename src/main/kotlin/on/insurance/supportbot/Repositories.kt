@@ -55,7 +55,7 @@ interface UserRepository : BaseRepository<User> {
 }
 
 interface GroupRepository : BaseRepository<Group> {
-    @Query("select * from groups g where g.user_id = ?1 and g.is_active = true ", nativeQuery = true)
+    @Query("select * from groups g where g.user_id = ?1 and g.deleted = false ", nativeQuery = true)
     fun getGroupByUserIdAndActive(userId: Long): Group?
 
     @Query("select * from groups g where g.operator_id = ?1 and g.is_active = true", nativeQuery = true)
