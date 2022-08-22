@@ -1,7 +1,6 @@
 package on.insurance.supportbot
-import on.insurance.supportbot.teligram.User
 
-fun User.createUser(chatId:Long): User {
+fun User.createUser(chatId: Long): User {
     return User(chatId)
 }
 

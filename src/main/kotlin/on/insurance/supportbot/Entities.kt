@@ -1,4 +1,4 @@
-package on.insurance.supportbot.teligram
+package on.insurance.supportbot
 
 import org.hibernate.annotations.ColumnDefault
 import org.springframework.data.annotation.CreatedDate
@@ -46,13 +46,21 @@ data class MessageEntity(
 
 @Entity(name = "groups")
 class Group(
-    @ManyToOne var user: User?=null,
+    @ManyToOne var user: User? = null,
     @ManyToOne var operator: User? = null,
     @Enumerated(EnumType.STRING) var language: Language?,
     var isActive: Boolean = true
 ) : BaseEntity()
+
 @Entity
 class Operator(
-    var name:String,
-   var phoneNumber:String,
+    var name: String,
+    var phoneNumber: String,
+) : BaseEntity()
+
+@Entity
+data class Admin(
+    @Column(unique = true, nullable = false) var username: String? = null,
+    @Column var password: String? = null,
+    @Enumerated(EnumType.STRING)  var role: Role=Role.ADMIN
 ) : BaseEntity()

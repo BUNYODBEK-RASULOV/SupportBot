@@ -1,4 +1,4 @@
-package on.insurance.supportbot.teligram
+package on.insurance.supportbot
 
 
 

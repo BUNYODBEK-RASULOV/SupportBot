@@ -22,10 +22,19 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.hudsonci.plugins:claim:1.8-h-1")
     runtimeOnly("org.postgresql:postgresql")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.telegram:telegrambots-spring-boot-starter:6.1.0")
+    implementation ("org.springframework.boot:spring-boot-starter-security")
+    implementation( "org.springframework.security:spring-security-test")
+
+    implementation("io.jsonwebtoken:jjwt:0.9.1")
+
+
+
+
 
 }
 

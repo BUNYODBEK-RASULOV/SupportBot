@@ -1,5 +1,6 @@
-POST localhost:8082/api/v1/operator
+POST localhost:8083/api/v1/operator
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2NjExNzI2NzQsImV4cCI6MTY2MTE3NjI3NCwiaXNzIjoiTWF6Z2kgcHJvZHVjdGlvbiIsInVzZXJuYW1lIjoia2FyaW14b24ifQ.arwDOWtfpbaDwiSgm3nVBWrz4bMsHAq7ySl-d20VYno
 
 {
   "name": "karimxon1",
@@ -25,3 +26,11 @@ GET localhost:8082/api/v1/operator/list
 ###
 
 DELETE localhost:8082/api/v1/operator/1
+###
+POST localhost:8083/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "username": "karimxon",
+  "password": "5003"
+}

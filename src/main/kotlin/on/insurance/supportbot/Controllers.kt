@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/api/v1/operator")
 class OperatorController(private val service: OperatorService) {
-    @PostMapping
-    fun create(@RequestBody dto:  OperatorCreateDto) = service.create(dto)
+    @PostMapping( )
+    fun create(@RequestBody dto: OperatorCreateDto) = service.create(dto)
 
     @GetMapping("{id}")
     fun get(@PathVariable id: Long): OperatorDto = service.get(id)
@@ -24,4 +24,13 @@ class OperatorController(private val service: OperatorService) {
 
 
 
+}
+
+
+
+@RestController
+@RequestMapping("/api/v1/auth")
+class AuthController(private val service: AuthService) {
+    @PostMapping("/login")
+    fun login(@RequestBody dto:  AuthDto):String = service.login(dto)
 }
