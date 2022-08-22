@@ -30,8 +30,8 @@ class OperatorController(
     @GetMapping("operatorlist")
     fun getAllList(): List<User> = userService.operatorList()
 
-    @GetMapping("groupList/{operatorId}")
-    fun getAllGroupList(@PathVariable operatorId: Long): List<Group> = groupService.getAllGroupListByOperatorId(operatorId)
+    @GetMapping("groupList")
+    fun getAllGroupList(@RequestBody dto: GroupsByOperatorIdDto): List<GroupsByOperatorId> = groupService.groupsByOperatorId(dto)
 
     @GetMapping("messageList/{groupId}")
     fun getAllMessageList(@PathVariable groupId:Long):List<MessageEntity> = messageService.getAllMessageByGroupId(groupId)

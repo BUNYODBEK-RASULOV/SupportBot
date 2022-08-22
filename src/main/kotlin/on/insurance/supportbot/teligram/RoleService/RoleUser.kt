@@ -39,7 +39,7 @@ class RoleUser(
 
         when (user.botStep) {
             CHAT -> {
-                saveChat()
+//                saveChat()
                 sendText()
             }
             BACK -> {

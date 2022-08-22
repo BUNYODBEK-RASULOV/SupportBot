@@ -1,7 +1,21 @@
 package on.insurance.supportbot
 
 
+import on.insurance.supportbot.teligram.Group
 import on.insurance.supportbot.teligram.Operator
+
+interface GroupsByOperatorId{
+    val kun:String
+    val group:Group
+}
+data class GroupsByOperatorIdDto(
+    var operator_id:Long,
+    var first_day:String,
+    var last_day:String,
+){
+
+}
+
 
 
 data class OperatorCreateDto(
