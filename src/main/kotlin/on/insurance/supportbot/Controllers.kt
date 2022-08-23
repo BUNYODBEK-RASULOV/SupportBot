@@ -50,10 +50,14 @@ class UserController(private val userService: UserService) {
     @GetMapping("page")
     fun page(pageable: Pageable): Page<ResponseUser> = userService.userListWithPagination(pageable)
 
+    @GetMapping("queue")
+    fun queue(pageable: Pageable): Page<ResponseUser> = userService.queueListWithPagination(pageable)
+
     @GetMapping("{id}")
     fun getUser(@PathVariable("id") id: Long): ResponseUser = userService.getContact(id)
 
     @PutMapping("{id}")
     fun editUser(@PathVariable("id") id: Long, @RequestBody  userRequest: UserRequest)  = userService.editUser(id,userRequest)
+
 
 }
