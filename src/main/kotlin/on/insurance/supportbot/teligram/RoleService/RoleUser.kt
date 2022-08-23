@@ -4,6 +4,8 @@ import on.insurance.supportbot.GroupService
 import on.insurance.supportbot.MessageService
 import on.insurance.supportbot.UserService
 import on.insurance.supportbot.teligram.*
+import on.insurance.supportbot.teligram.BotStep.*
+import on.insurance.supportbot.teligram.Message.YOU_HAVE_CONTACTED_THE_OPERATOR
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
 import org.telegram.telegrambots.meta.api.objects.Update
@@ -36,18 +38,37 @@ class RoleUser(
         update.message?.text?.run { scanButton(this) }
 
         when (user.botStep) {
-            BotStep.CHAT -> {
-                saveChat()
+            CHAT -> {
+//                saveChat()
                 sendText()
             }
-            BotStep.BACK -> {
+            BACK -> {
                 val remove = ReplyKeyboardRemove(true)
-                botService.sendMassage(update.message.chatId, "Operatorlarimiz tez orada bo'g'lanishadi", remove)
-                user.botStep = BotStep.CHAT
+                botService.sendMassage(update.message.chatId, YOU_HAVE_CONTACTED_THE_OPERATOR[user.language]!!, remove)
+                user.botStep = CHAT
             }
+            else -> botService.deleteMessage(update)
+
         }
         userService.update(user)
+    }
 
+    fun inlineFunk(updateFunc: Update, userFunc: User){
+        update=updateFunc
+        user=userFunc
+        group = groupService.getGroupByUserId(user)
+        val data = update.callbackQuery.data
+        when(user.botStep){
+            BALL ->{
+                group.ball=data.toInt()
+                group.deleted=true
+                groupService.update(group)
+                user.botStep=CHAT
+                botService.deleteMessage(update)
+            }
+
+        }
+        userService.update(user)
     }
 
 
@@ -75,7 +96,7 @@ class RoleUser(
     fun scanButton(text: String) {
         when (text) {
             "navbatingizni bilish" -> {
-                user.botStep = BotStep.QUEUE
+                user.botStep = QUEUE
             }
         }
     }

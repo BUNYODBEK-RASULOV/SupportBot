@@ -4,10 +4,13 @@ import on.insurance.supportbot.GroupService
 import on.insurance.supportbot.MessageService
 import on.insurance.supportbot.UserService
 import on.insurance.supportbot.teligram.*
+import on.insurance.supportbot.teligram.Message.*
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
 import org.telegram.telegrambots.meta.api.objects.Update
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException
@@ -38,12 +41,12 @@ class RoleOperator(
             BotStep.CHAT -> {
                 var user:User?=group?.user
                 if (user!=null){
-                    saveChat()
+//                    saveChat()
                     sendText()
                 }
             }
             BotStep.BACK->{
-                botService.sendMassage(update.message.chatId,"begin tugmasini bosing boshlash uchun",beginButton(""))
+                botService.sendMassage(update.message.chatId, CLICK_THE_BEGIN_BUTTON_TO_START[operator.language]!!,beginButton(operator.language))
                 userService.backOperator(operator)
                 group?.run {
                     group!!.isActive=false
@@ -51,13 +54,13 @@ class RoleOperator(
                 }
             }
             BotStep.BEGIN->{
-                botService.sendMassage(update.message.chatId,"Siz activ holga utdingiz",menuButton(""))
+                botService.sendMassage(update.message.chatId,YOU_ARE_ENABLED[operator.language]!!,menuButton(operator.language))
                 userService.operatorIsActive(operator)
                 operator.botStep=BotStep.CHAT
                 begin()
             }
             BotStep.CLOSE->{
-                botService.sendMassage(update.message.chatId,"Chat yangilandi",menuButton(""))
+                botService.sendMassage(update.message.chatId,NEW_CHAT[operator.language]!!,menuButton(operator.language))
                 userService.operatorIsActive(operator)
                 operator.botStep=BotStep.CHAT
                 begin()
@@ -72,56 +75,67 @@ class RoleOperator(
     }
 
     fun sendText() {
-        var chatId: Long = 0
-        var text: String = ""
+        var from_chat_id: Long = 0
+        var message_id:Int=0
         update.message?.run {
-            chatId = getChatId()
-            text = getText()
+            from_chat_id = getChatId()
+            message_id=messageId
         }
-        group!!.user?.run { botService.sendMassage(this.chatId, text,) }
+//        group!!.user?.run { botService.sendMassage(this.chatId, text,) }
+        group!!.user?.run { myBot.copyMessage(this.chatId,from_chat_id, message_id) }
     }
 
     fun scanButton(text:String){
 
         when(text){
-            "yopish"->{
+            CLOSE[operator.language]->{
                 operator.botStep=BotStep.CLOSE
                 group?.run {
+                    botService.sendMassage(user!!.chatId,GIVE_THE_OPERATOR_MARK[user!!.language]!!,ballButtons())
+                    user!!.botStep=BotStep.BALL
+                    userService.update(user!!)
                     group!!.isActive=false
                     groupService.update(group!!)
                 }
             }
-            "chiqish"->{
+            EXIT[operator.language]->{
                 operator.botStep=BotStep.BACK
+                group?.run {
+                    botService.sendMassage(user!!.chatId,GIVE_THE_OPERATOR_MARK[user!!.language]!!,ballButtons())
+                    user!!.botStep=BotStep.BALL
+                    userService.update(user!!)
+                    group!!.isActive=false
+                    groupService.update(group!!)
+                }
             }
-            "begin"->{
+            BEGIN[operator.language]->{
                 operator.botStep=BotStep.BEGIN
             }
         }
     }
 
-    fun menuButton(lang: String): ReplyKeyboardMarkup = ReplyKeyboardMarkup().apply {
+    fun menuButton(lang: Language): ReplyKeyboardMarkup = ReplyKeyboardMarkup().apply {
         oneTimeKeyboard = true
         resizeKeyboard = true
         selective = false
         keyboard = mutableListOf(KeyboardRow(listOf(
             KeyboardButton().apply {
-                text = "yopish"
+                text = CLOSE[lang]!!
             },
             KeyboardButton().apply {
-                text = "chiqish"
+                text = EXIT[lang]!!
             }
         )))
 
     }
 
-    fun beginButton(lang: String): ReplyKeyboardMarkup = ReplyKeyboardMarkup().apply {
+    fun beginButton(lang: Language): ReplyKeyboardMarkup = ReplyKeyboardMarkup().apply {
         oneTimeKeyboard = true
         resizeKeyboard = true
         selective = false
         keyboard = mutableListOf(KeyboardRow(listOf(
             KeyboardButton().apply {
-                text = "begin"
+                text =BEGIN[lang]!!
             }
         )))
 
@@ -137,7 +151,6 @@ class RoleOperator(
                     val userMessage =this
                     userMessage.forEach {
                         myBot.forwardMessage(opChatId,it.chatId,it.massageId)
-//                        botService.sendMassage(opChatId,it.massages)
                     }
                     group1.operator=operator1
                     group1.isActive=true
@@ -145,5 +158,26 @@ class RoleOperator(
                 }
         }
 
+    }
+
+    fun ballButtons(): InlineKeyboardMarkup {
+        var inlineKeyboardMarkup = InlineKeyboardMarkup()
+        var rowList: MutableList<List<InlineKeyboardButton>> = ArrayList()
+        var keyboardButtons = mutableListOf<InlineKeyboardButton>()
+        for(i in 1..5){
+            val inlineKeyboardButton = InlineKeyboardButton()
+            inlineKeyboardButton.text = i.toString()
+            inlineKeyboardButton.callbackData = i.toString()
+            keyboardButtons.add(inlineKeyboardButton);
+        }
+        rowList.add(keyboardButtons)
+        var keyboardButtons2 = mutableListOf<InlineKeyboardButton>()
+        val inlineKeyboardButton = InlineKeyboardButton()
+        inlineKeyboardButton.text = "next"
+        inlineKeyboardButton.callbackData = "0"
+        keyboardButtons2.add(inlineKeyboardButton);
+        rowList.add(keyboardButtons2)
+        inlineKeyboardMarkup.setKeyboard(rowList);
+        return inlineKeyboardMarkup
     }
 }
