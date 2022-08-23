@@ -101,4 +101,8 @@ interface OperatorRepository : BaseRepository<Operator> {
     fun getAllOperator(): List<Operator>
 }
 
+interface AttachmentRepository:BaseRepository<Attachment>{
+
+}
+
 
