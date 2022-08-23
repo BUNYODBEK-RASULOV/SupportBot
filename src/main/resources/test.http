@@ -19,7 +19,7 @@ Content-Type: application/json
 
 ###
 
-GET localhost:8082/api/v1/operator/list
+GET localhost:8082/api/v1/operator/?size=5&page=0
 
 
 ###

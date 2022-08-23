@@ -20,17 +20,18 @@ class OperatorController(
     @PostMapping
     fun create(@RequestBody dto: OperatorCreateDto) = service.create(dto)
 
+    @PutMapping("{id}")
+    fun update(@PathVariable id: Long, @RequestBody dto: OperatorUpdateDto) = service.update(id, dto)
+
     @GetMapping("{id}")
     fun get(@PathVariable id: Long): OperatorDto = service.get(id)
 
-    @PutMapping("{id}")
-    fun update(@PathVariable id: Long, @RequestBody dto: OperatorUpdateDto) = service.update(id, dto)
 
     @DeleteMapping("{id}")
     fun delete(@PathVariable id: Long) = service.delete(id)
 
-    @GetMapping("operatorlist")
-    fun getAllList(): List<User> = userService.operatorList()
+    @GetMapping()
+    fun getAllList(pageable: Pageable): Page<User> = userService.operatorList(pageable)
 
     @GetMapping("groupList")
     fun getAllGroupList(@RequestBody dto: GroupsByOperatorIdDto): List<GroupsByOperatorId> =
@@ -45,19 +46,23 @@ class OperatorController(
 
 
 @RestController
-@RequestMapping("api/vi/user")
+@RequestMapping("api/v1/user")
 class UserController(private val userService: UserService) {
-    @GetMapping("page")
-    fun page(pageable: Pageable): Page<ResponseUser> = userService.userListWithPagination(pageable)
 
-    @GetMapping("queue")
-    fun queue(pageable: Pageable): Page<ResponseUser> = userService.queueListWithPagination(pageable)
+    @GetMapping()
+    fun page(pageable: Pageable): Page<ResponseUser> = userService.userListWithPagination(pageable)
 
     @GetMapping("{id}")
     fun getUser(@PathVariable("id") id: Long): ResponseUser = userService.getContact(id)
 
     @PutMapping("{id}")
-    fun editUser(@PathVariable("id") id: Long, @RequestBody  userRequest: UserRequest)  = userService.editUser(id,userRequest)
+    fun editUser(@PathVariable("id") id: Long, @RequestBody userRequest: UserRequest) =
+        userService.editUser(id, userRequest)
+}
 
-
+@RestController
+@RequestMapping("api/v1/queue")
+class QueueController(private val userService: UserService) {
+    @GetMapping()
+    fun queue(pageable: Pageable): Page<ResponseUser> = userService.queueListWithPagination(pageable)
 }

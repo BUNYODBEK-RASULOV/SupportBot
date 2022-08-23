@@ -19,11 +19,12 @@ interface UserService {
     fun operatorIsActive(operator: User)
     fun emptyOperator(user: User): User?
     fun checkOperator(contact: Contact, user: User): User
-    fun operatorList(): List<User>
+    fun operatorList(pageable: Pageable): Page<User>
 
     fun userListWithPagination(pageable: Pageable): Page<ResponseUser>
     fun queueListWithPagination(pageable: Pageable): Page<ResponseUser>
-    fun getContact(id: Long): ResponseUser
+    fun
+            getContact(id: Long): ResponseUser
     fun editUser(id: Long, userRequest: UserRequest)
 
 }
@@ -192,8 +193,8 @@ class UserServiceImpl(
         return user
     }
 
-    override fun operatorList(): List<User> {
-        return userRepository.getAllOperatorListByRole()
+    override fun operatorList(pageable: Pageable): Page<User> {
+        return userRepository.getAllOperatorListByRole(pageable)
     }
 
 

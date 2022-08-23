@@ -44,7 +44,7 @@ interface UserRepository : BaseRepository<User> {
     fun findByChatIdd(chatId: Long): User?
 
     @Query("select * from users u where u.role ='OPERATOR'", nativeQuery = true)
-    fun getAllOperatorListByRole(): List<User>
+    fun getAllOperatorListByRole(pageable: Pageable): Page<User>
 
 
     @Query(
