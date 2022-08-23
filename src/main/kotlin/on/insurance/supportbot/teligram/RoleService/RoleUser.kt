@@ -46,6 +46,9 @@ class RoleUser(
                 botService.sendMassage(update.message.chatId, YOU_HAVE_CONTACTED_THE_OPERATOR[user.language]!!, remove)
                 user.botStep = CHAT
             }
+            BLOC->{
+                botService.sendMassage(user.chatId, Message.YOU_ARE_BLOCKED[user.language]!!)
+            }
             else -> botService.deleteMessage(update)
 
         }

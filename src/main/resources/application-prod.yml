@@ -1,0 +1,25 @@
+server:
+  port: 8087
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/supportBot
+    username: postgres
+    password: 1
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_schema: nova_support_bot
+        temp:
+          use_jdbc_metadata_defaults: false
+        jdbc:
+          lob:
+            non_contextual_creation: true
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+telegram:
+  botName: '@novaSupportbot'
+  token: '5658902226:AAEtH3fXTzF5yzQkhZyVE4oKX30nw5iCraA'

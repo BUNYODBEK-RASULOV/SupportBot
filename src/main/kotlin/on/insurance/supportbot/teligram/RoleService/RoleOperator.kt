@@ -94,6 +94,7 @@ class RoleOperator(
                     user!!.botStep=BotStep.BALL
                     userService.update(user!!)
                     group!!.isActive=false
+                    group!!.isRead=true
                     groupService.update(group!!)
                 }
             }
@@ -104,11 +105,23 @@ class RoleOperator(
                     user!!.botStep=BotStep.BALL
                     userService.update(user!!)
                     group!!.isActive=false
+                    group!!.isRead=true
                     groupService.update(group!!)
                 }
             }
             BEGIN[operator.language]->{
                 operator.botStep=BotStep.BEGIN
+            }
+            BLOCK[operator.language]->{
+                operator.botStep=BotStep.CLOSE
+                group?.run {
+                    botService.sendMassage(user!!.chatId,YOU_ARE_BLOCKED[user!!.language]!!)
+                    user!!.botStep=BotStep.BLOC
+                    userService.update(user!!)
+                    group!!.isActive=false
+                    group!!.isRead=true
+                    groupService.update(group!!)
+                }
             }
         }
     }
@@ -123,6 +136,9 @@ class RoleOperator(
             },
             KeyboardButton().apply {
                 text = EXIT[lang]!!
+            } ,
+            KeyboardButton().apply {
+                text = BLOCK[lang]!!
             }
         )))
 

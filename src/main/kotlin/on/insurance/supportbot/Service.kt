@@ -97,7 +97,7 @@ class MessageServiceImpl(
 
     override fun getUserMessage(group: Group): List<MessageEntity> {
         messageRepository.getUserMessage(group.user!!.id!!, group.id!!)?.run {
-            return mutableListOf()
+            return this
         }
         return emptyList()
     }
