@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
+import org.telegram.telegrambots.meta.api.methods.CopyMessage
 import org.telegram.telegrambots.meta.api.methods.ForwardMessage
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
 import org.telegram.telegrambots.meta.api.objects.Update
@@ -54,6 +55,15 @@ class MyBot(
         val  forwardMessage=ForwardMessage(chat_id.toString(),from_chat_id.toString(),message_id)
         try {
             execute(forwardMessage)
+        } catch (tae: TelegramApiException) {
+            throw RuntimeException(tae)
+        }
+    }
+
+    fun copyMessage(chat_id:Long,from_chat_id: Long,message_id: Int){
+        val copyMessage=CopyMessage(chat_id.toString(),from_chat_id.toString(),message_id)
+        try {
+            execute(copyMessage)
         } catch (tae: TelegramApiException) {
             throw RuntimeException(tae)
         }

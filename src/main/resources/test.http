@@ -25,3 +25,16 @@ GET localhost:8082/api/v1/operator/list
 ###
 
 DELETE localhost:8082/api/v1/operator/1
+###
+GET localhost:8082/api/vi/user/page
+###
+GET localhost:8082/api/vi/user/1
+###
+
+PUT localhost:8082/api/vi/user/1
+Content-Type: application/json
+
+{
+  "fullName" : "Xudoyberdi",
+  "state": "START"
+}

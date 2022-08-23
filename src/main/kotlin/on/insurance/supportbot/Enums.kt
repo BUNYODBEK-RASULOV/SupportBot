@@ -5,7 +5,7 @@ enum class BotStep {
     LANGUAGE,
     CONTACT,
     CHAT, QUEUE,
-    CLOSE, BEGIN, BACK, BALL,
+    CLOSE, BEGIN, BACK, BALL,SPAM
 
 }
 
