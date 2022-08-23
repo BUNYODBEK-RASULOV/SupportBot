@@ -30,8 +30,9 @@ interface GroupService {
     fun getNewGroupByOperator(operator: User): Group?
     fun getGroupByOperatorId(operator: User): Group?
 
-    //operator_id buyicha groupList
-    fun getAllGroupListByOperatorId(operatorId:Long): List<Group>
+    //operator_id buyicha groupList admin uchun
+//    operator_id, first_day, last_day kirib keladi
+    fun groupsByOperatorId(groupsByOperatorIdDto: GroupsByOperatorIdDto): List<GroupsByOperatorId>
 
 }
 
@@ -135,10 +136,8 @@ class GroupServiceImpl(
         return groupRepository.getGroupByOperatorAndLanguageAndActive(operator.language.name)?.run { this }
     }
 
-
-
-    override fun getAllGroupListByOperatorId(operatorId: Long): List<Group> {
-        TODO("Not yet implemented")
+    override fun groupsByOperatorId(dto: GroupsByOperatorIdDto): List<GroupsByOperatorId> {
+        return groupRepository.GroupsByOperatorId(dto.operator_id,dto.first_day,dto.last_day)
     }
 }
 

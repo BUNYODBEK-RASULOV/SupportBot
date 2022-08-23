@@ -70,8 +70,10 @@ interface GroupRepository : BaseRepository<Group> {
 
     fun findByOperatorId(operatorId: Long): Group?
     //Operator_id buyicha barcha Grouplar
-    @Query("""select * from groups g where g.operator_id=?1 and date(select cast(now(),as date))""", nativeQuery = true)
-    fun getAllGroupByOperatorId(operatorId:Long):List<Group>
+    @Query("""select DATE(g.created_date) kun,* from groups g
+where operator_id=?1
+  and created_date between ?2 and ?3 order by created_date""", nativeQuery = true)
+    fun GroupsByOperatorId(operatorId:Long,first_day:String,last_day:String):List<GroupsByOperatorId>
 }
 
 interface ContactRepository : BaseRepository<Contact> {
