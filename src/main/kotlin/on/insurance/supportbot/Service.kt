@@ -8,10 +8,13 @@ import on.insurance.supportbot.teligram.User
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.core.userdetails.UsernameNotFoundException
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.telegram.telegrambots.meta.api.objects.Update
 import javax.persistence.EntityManager
 import kotlin.NullPointerException
+
 
 interface UserService {
     fun getUser(chatId: Long): User
@@ -21,7 +24,12 @@ interface UserService {
     fun operatorIsActive(operator: User)
     fun emptyOperator(user: User): User?
     fun checkOperator(contact: Contact, user: User): User
-    fun operatorList():List<User>
+    fun operatorList(): List<User>
+
+    fun userListWithPagination(pageable: Pageable): Page<ResponseUser>
+    fun getContact(id: Long): ResponseUser
+    fun editUser(id: Long, userRequest: UserRequest)
+
 }
 
 interface GroupService {
@@ -36,12 +44,13 @@ interface GroupService {
 
 }
 
-interface MessageService{
-    fun creat(update: Update,group: Group,user: User)
-    fun creat(update: Update,group: Group,user: User,readed:Boolean)
-    fun getUserMessage(group: Group):List<MessageEntity>
+interface MessageService {
+    fun creat(update: Update, group: Group, user: User)
+    fun creat(update: Update, group: Group, user: User, readed: Boolean)
+    fun getUserMessage(group: Group): List<MessageEntity>
+
     //messagelar Listini group id buyicha olish
-    fun getAllMessageByGroupId(groupId:Long):List<MessageEntity>
+    fun getAllMessageByGroupId(groupId: Long): List<MessageEntity>
 }
 
 interface ContactService {
@@ -63,28 +72,28 @@ class MessageServiceImpl(
     val messageRepository: MessageRepository
 ) : MessageService {
     override fun creat(update: Update, group: Group, user: User) {
-        var chatId:Long=1
-        var massageId:Int=0
-        var massage:String=""
+        var chatId: Long = 1
+        var massageId = 0
+        var massage = ""
         update.message?.run {
-            chatId=this.chatId
-            massageId=this.messageId
-            massage=this.text
+            chatId = this.chatId
+            massageId = this.messageId
+            massage = this.text
         }
 
-        messageRepository.save(MessageEntity(chatId,massageId,user, group, massage, user.language))
+        messageRepository.save(MessageEntity(chatId, massageId, user, group, massage, user.language))
     }
 
     override fun creat(update: Update, group: Group, user: User, readed: Boolean) {
-        var chatId:Long=1
-        var massageId:Int=0
-        var massage:String=""
+        var chatId: Long = 1
+        var massageId = 0
+        var massage = ""
         update.message?.run {
-            chatId=this.chatId
-            massageId=this.messageId
-            massage=this.text
+            chatId = this.chatId
+            massageId = this.messageId
+            massage = this.text
         }
-        messageRepository.save(MessageEntity(chatId,massageId,user, group, massage, user.language, readed))
+        messageRepository.save(MessageEntity(chatId, massageId, user, group, massage, user.language, readed))
     }
 
     override fun getUserMessage(group: Group): List<MessageEntity> {
@@ -101,7 +110,7 @@ class MessageServiceImpl(
     }
 
     override fun getAllMessageByGroupId(groupId: Long): List<MessageEntity> {
-      return  messageRepository.getAllMessageByGroupId(groupId)
+        return messageRepository.getAllMessageByGroupId(groupId)
     }
 }
 
@@ -137,14 +146,15 @@ class GroupServiceImpl(
     }
 
     override fun groupsByOperatorId(dto: GroupsByOperatorIdDto): List<GroupsByOperatorId> {
-        return groupRepository.GroupsByOperatorId(dto.operator_id,dto.first_day,dto.last_day)
+        return groupRepository.GroupsByOperatorId(dto.operator_id, dto.first_day, dto.last_day)
     }
 }
 
 @Service
 class UserServiceImpl(
     private val userRepository: UserRepository,
-    private val operatorRepository: OperatorRepository
+    private val operatorRepository: OperatorRepository,
+    private val contactRepository: ContactRepository
 ) : UserService {
     override fun getUser(chatId: Long): User {
         return userRepository.findByChatIdd(chatId)?.run { this } ?: createUser(chatId)
@@ -186,9 +196,32 @@ class UserServiceImpl(
         return user
     }
 
-    override fun operatorList(): List<User>{
-      return  userRepository.getAllOperatorListByRole()
+    override fun operatorList(): List<User> {
+        return userRepository.getAllOperatorListByRole()
     }
+
+
+    //this is for admin  user list with pagination
+    override fun userListWithPagination(pageable: Pageable): Page<ResponseUser> = contactRepository.userInfo(pageable)
+    override fun getContact(id: Long): ResponseUser = contactRepository.getUser(id)
+    override fun editUser(id: Long, userRequest: UserRequest) {
+        val user = userRepository.findByIdNotDeleted(id) ?: throw NullPointerException("we have not this user")
+        val contact = contactRepository.findByUsername(id) ?: throw NullPointerException("we have not this user")
+        userRequest.run {
+
+            fullName?.run {
+                contact.userName = fullName!!
+                contactRepository.save(contact)
+            }
+            state?.run {
+                user.botStep = state!!
+                userRepository.save(user)
+            }
+
+        }
+    }
+
+
 }
 
 @Service

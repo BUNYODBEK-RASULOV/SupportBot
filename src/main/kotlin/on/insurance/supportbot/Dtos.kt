@@ -4,19 +4,22 @@ package on.insurance.supportbot
 import on.insurance.supportbot.teligram.Admin
 import on.insurance.supportbot.teligram.Group
 import on.insurance.supportbot.teligram.Operator
+import on.insurance.supportbot.teligram.*
+import javax.persistence.EnumType
+import javax.persistence.Enumerated
 
 interface GroupsByOperatorId{
     val kun:String
     val group: Group
 }
+
 data class GroupsByOperatorIdDto(
-    var operator_id:Long,
-    var first_day:String,
-    var last_day:String,
-){
+    var operator_id: Long,
+    var first_day: String,
+    var last_day: String,
+) {
 
 }
-
 
 
 data class OperatorCreateDto(
@@ -44,3 +47,25 @@ data class OperatorDto(
 }
 data class LoginDto(var username:String,var password:String)
 data class BaseMessage(val code: Int, val message: String)
+data class UserDto(
+    var id: Long,
+    var chatId: Long,
+    var botStep: BotStep,
+    var language: Language,
+    var isActive: Boolean
+
+)
+
+interface ResponseUser {
+    var id: Long
+    var telephoneNumber: String
+    var fullName: String
+    var systemLanguage: String
+    var state:String
+
+}
+data class UserRequest(
+
+    var fullName: String?=null,
+    var state:BotStep?=null
+)

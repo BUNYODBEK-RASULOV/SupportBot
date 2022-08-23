@@ -32,3 +32,11 @@ Content-Type: application/json
   "username":"Admin",
   "password": 12345
 }
+
+PUT localhost:8082/api/vi/user/1
+Content-Type: application/json
+
+{
+  "fullName" : "Xudoyberdi",
+  "state": "START"
+}

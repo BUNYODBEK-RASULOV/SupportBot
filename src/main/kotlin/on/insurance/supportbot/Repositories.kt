@@ -1,12 +1,12 @@
 package on.insurance.supportbot
 
+import antlr.collections.impl.LList
 import on.insurance.supportbot.teligram.*
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.domain.Specification
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor
-import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.jpa.repository.support.JpaEntityInformation
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository
@@ -43,8 +43,10 @@ interface UserRepository : BaseRepository<User> {
     @Query("select * from users u where u.chat_id = ?1", nativeQuery = true)
     fun findByChatIdd(chatId: Long): User?
 
-        @Query("select * from users u where u.role ='OPERATOR'",nativeQuery = true)
-        fun getAllOperatorListByRole():List<User>
+    @Query("select * from users u where u.role ='OPERATOR'", nativeQuery = true)
+    fun getAllOperatorListByRole(): List<User>
+
+
     @Query(
         value = """select * from users u
     where u.deleted=false
@@ -69,18 +71,43 @@ interface GroupRepository : BaseRepository<Group> {
 
 
     fun findByOperatorId(operatorId: Long): Group?
+
     //Operator_id buyicha barcha Grouplar
-    @Query("""select DATE(g.created_date) kun,* from groups g
+    @Query(
+        """select DATE(g.created_date) kun,* from groups g
 where operator_id=?1
-  and created_date between ?2 and ?3 order by created_date""", nativeQuery = true)
-    fun GroupsByOperatorId(operatorId:Long,first_day:String,last_day:String):List<GroupsByOperatorId>
+  and created_date between ?2 and ?3 order by created_date""", nativeQuery = true
+    )
+    fun GroupsByOperatorId(operatorId: Long, first_day: String, last_day: String): List<GroupsByOperatorId>
 }
 
 interface ContactRepository : BaseRepository<Contact> {
+    @Query(
+        """select u.id as id, c.phone_number as telephoneNumber,c.user_name as fullName,
+       u.language as systemLanguage, u.bot_step as state
+from contact c
+inner join users u on u.id = c.user_id
+where u.deleted=false
+""", nativeQuery = true
+    )
+    fun userInfo(pageable: Pageable): Page<ResponseUser>
+
+    @Query(
+        """select u.id as id, c.phone_number as telephoneNumber,c.user_name as fullName,
+       u.language as systemLanguage, u.bot_step as state
+from contact c
+inner join users u on u.id = c.user_id
+where u.deleted=false and u.id=:id
+""", nativeQuery = true
+    )
+    fun getUser(id:Long): ResponseUser
+
+    @Query("""select * from contact where user_id=:userId """, nativeQuery = true)
+    fun findByUsername(userId:Long): Contact?
 
 }
 
-interface MessageRepository:BaseRepository<MessageEntity> {
+interface MessageRepository : BaseRepository<MessageEntity> {
     @Query(
         """select * from message m where m.readed=false and m.user_id=:userId and 
         m.group_id=:groupId order by created_date""", nativeQuery = true
@@ -90,6 +117,7 @@ interface MessageRepository:BaseRepository<MessageEntity> {
     @Query("""select * from message m where m.group_id=?1 order by created_date""", nativeQuery = true)
     fun getAllMessageByGroupId(groupId: Long): List<MessageEntity>
 }
+
 interface OperatorRepository : BaseRepository<Operator> {
 
     @Query("select (count(o) > 0) from Operator o where o.phoneNumber = ?1")
