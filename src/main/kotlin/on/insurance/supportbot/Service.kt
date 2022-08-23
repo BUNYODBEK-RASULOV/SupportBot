@@ -5,9 +5,13 @@ import on.insurance.supportbot.teligram.Contact
 import on.insurance.supportbot.teligram.Group
 import on.insurance.supportbot.teligram.MessageEntity
 import on.insurance.supportbot.teligram.User
+import org.springframework.security.core.userdetails.UserDetails
+import org.springframework.security.core.userdetails.UserDetailsService
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Service
 import org.telegram.telegrambots.meta.api.objects.Update
 import javax.persistence.EntityManager
+import kotlin.NullPointerException
 
 interface UserService {
     fun getUser(chatId: Long): User
@@ -226,6 +230,19 @@ class OperatorServiceImpl(
     }
 
     override fun listOfOperator() = repository.getAllOperator().map(OperatorDto.Companion::toDto)
+}
+
+@Service
+class AuthService(
+    private val adminRepository: AdminRepository
+):UserDetailsService{
+
+    @Throws(NullPointerException::class)
+    override fun loadUserByUsername(username: String): UserDetails {
+        val admin = adminRepository.findByUsername(username)?:throw NullPointerException("Invalid username or password")
+        return admin
+    }
+
 }
 
 

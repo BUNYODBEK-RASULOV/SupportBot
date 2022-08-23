@@ -1,6 +1,7 @@
 package on.insurance.supportbot
 
 
+import on.insurance.supportbot.teligram.Admin
 import on.insurance.supportbot.teligram.Operator
 
 
@@ -27,6 +28,5 @@ data class OperatorDto(
         fun toDto(entity: Operator) = OperatorDto(entity.id!!, entity.name, entity.phoneNumber)
     }
 }
-
-
+data class LoginDto(var username:String,var password:String)
 data class BaseMessage(val code: Int, val message: String)

@@ -99,4 +99,8 @@ interface OperatorRepository : BaseRepository<Operator> {
     fun getAllOperator(): List<Operator>
 }
 
+interface AdminRepository : BaseRepository<Admin> {
+    @Query("""select * from admin a where a.username=?1""", nativeQuery = true)
+    fun findByUsername(username: String): Admin?
+}
 
