@@ -9,6 +9,11 @@ enum class BotStep {
 
 }
 
+enum class MessageType{
+    DOCUMENT,
+    TEXT,
+}
+
 enum class Language(
     val value: String
     ) {

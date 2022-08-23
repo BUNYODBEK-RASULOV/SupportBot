@@ -21,7 +21,6 @@ class RoleUser(
     val botService: BotService,
     val groupService: GroupService,
     val messageService: MessageService,
-    val roleOperator: RoleOperator,
     val userService: UserService,
     @Lazy
     val myBot: MyBot,
@@ -39,7 +38,7 @@ class RoleUser(
 
         when (user.botStep) {
             CHAT -> {
-//                saveChat()
+                saveChat()
                 sendText()
             }
             BACK -> {
@@ -73,7 +72,7 @@ class RoleUser(
 
 
     fun saveChat() {
-        messageService.creat(update, group, user, group.operator != null)
+        messageService.creat(update.message, group, user)
     }
 
     fun sendText() {

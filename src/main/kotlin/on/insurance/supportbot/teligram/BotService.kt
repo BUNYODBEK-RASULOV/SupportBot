@@ -35,6 +35,7 @@ class BotService(
         update.run {
             chatId = message.chatId
         }
+
         var user = userService.getUser(chatId)
 
         when (user.botStep) {

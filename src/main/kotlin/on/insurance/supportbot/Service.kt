@@ -4,10 +4,15 @@ import on.insurance.supportbot.teligram.*
 import on.insurance.supportbot.teligram.Contact
 import on.insurance.supportbot.teligram.Group
 import on.insurance.supportbot.teligram.MessageEntity
+import on.insurance.supportbot.teligram.MessageType.*
 import on.insurance.supportbot.teligram.User
+import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
-import org.telegram.telegrambots.meta.api.objects.Update
-import javax.persistence.EntityManager
+import org.telegram.telegrambots.meta.api.methods.send.SendDocument
+import org.telegram.telegrambots.meta.api.objects.InputFile
+import org.telegram.telegrambots.meta.api.objects.Message
+import java.io.File
+import java.util.*
 
 interface UserService {
     fun getUser(chatId: Long): User
@@ -33,8 +38,7 @@ interface GroupService {
 }
 
 interface MessageService{
-    fun creat(update: Update,group: Group,user: User)
-    fun creat(update: Update,group: Group,user: User,readed:Boolean)
+    fun creat(message:Message,group: Group,user: User)
     fun getUserMessage(group: Group):List<MessageEntity>
     //messagelar Listini group id buyicha olish
     fun getAllMessageByGroupId(groupId:Long):List<MessageEntity>
@@ -56,42 +60,38 @@ interface OperatorService {
 
 @Service
 class MessageServiceImpl(
-    val messageRepository: MessageRepository
+    val messageRepository: MessageRepository,
+    @Lazy
+    val myBot: MyBot
 ) : MessageService {
-    override fun creat(update: Update, group: Group, user: User) {
-        var chatId:Long=1
-        var massageId:Int=0
-        var massage:String=""
-        update.message?.run {
-            chatId=this.chatId
-            massageId=this.messageId
-            massage=this.text
+    override fun creat(message:Message, group: Group, user: User) {
+        val sendDocument = SendDocument()
+        message.caption?.run {  }
+        message.text?.run {
+            messageRepository.save(MessageEntity(user.chatId,message.messageId,user,group,TEXT,this))
+        }
+        message.document?.run {
+            val document = message.document
+            var messageEntity=MessageEntity(user.chatId,message.messageId,user,group,DOCUMENT,fileId = document.fileId)
+            message.caption?.run {messageEntity.caption=this}
+            messageRepository.save(messageEntity)
+            sendDocument.document = InputFile(document.fileId)
+            println(document.fileName)
+            File("./documents").mkdirs()
+            val file = File("./documents/${Date().time}-${document.fileName}")
+            file.writeBytes(
+                myBot.getFromTelegram(document.fileId, myBot.botToken)
+            )
         }
 
-        messageRepository.save(MessageEntity(chatId,massageId,user, group, massage, user.language))
     }
 
-    override fun creat(update: Update, group: Group, user: User, readed: Boolean) {
-        var chatId:Long=1
-        var massageId:Int=0
-        var massage:String=""
-        update.message?.run {
-            chatId=this.chatId
-            massageId=this.messageId
-            massage=this.text
-        }
-        messageRepository.save(MessageEntity(chatId,massageId,user, group, massage, user.language, readed))
-    }
+
+
 
     override fun getUserMessage(group: Group): List<MessageEntity> {
         messageRepository.getUserMessage(group.user!!.id!!, group.id!!)?.run {
-            val list = mutableListOf<MessageEntity>()
-            for (entity in this) {
-                entity.readed = true
-                list.add(entity)
-            }
-            messageRepository.saveAll(list)
-            return list
+            return mutableListOf()
         }
         return emptyList()
     }
