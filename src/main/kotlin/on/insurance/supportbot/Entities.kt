@@ -41,9 +41,9 @@ data class MessageEntity(
     @ManyToOne var user: User,
     @ManyToOne var group: Group,
     @Enumerated(EnumType.STRING) val messageType:MessageType,
+    @OneToOne val attachment: Attachment?,
     val text: String? = null,
     var caption: String? = null,
-    val fileId: String? = null,
     var isActive: Boolean? = true
 ) : BaseEntity()
 
@@ -62,3 +62,11 @@ class Operator(
     var name: String,
     var phoneNumber: String,
 ) : BaseEntity()
+
+@Entity
+class Attachment(
+    var fileOriginalName:String,
+    var size:Long,
+    var contentType:String,
+    var name:String
+) :BaseEntity()

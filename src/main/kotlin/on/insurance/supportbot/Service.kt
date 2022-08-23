@@ -62,23 +62,29 @@ interface OperatorService {
 class MessageServiceImpl(
     val messageRepository: MessageRepository,
     @Lazy
-    val myBot: MyBot
+    val myBot: MyBot,
+    val attachmentRepository: AttachmentRepository,
 ) : MessageService {
     override fun creat(message:Message, group: Group, user: User) {
         val sendDocument = SendDocument()
         message.caption?.run {  }
         message.text?.run {
-            messageRepository.save(MessageEntity(user.chatId,message.messageId,user,group,TEXT,this))
+            messageRepository.save(MessageEntity(user.chatId,message.messageId,user,group,TEXT,null,this))
         }
         message.document?.run {
             val document = message.document
-            var messageEntity=MessageEntity(user.chatId,message.messageId,user,group,DOCUMENT,fileId = document.fileId)
+            val originalName=document.fileName
+            val name="${Date().time}-${originalName}"
+            val size=document.fileSize
+            val contentType=document.mimeType
+
+            val attachment=Attachment(originalName,size,contentType,name)
+            val messageEntity=MessageEntity(user.chatId,message.messageId,user,group,DOCUMENT,attachmentRepository.save(attachment))
             message.caption?.run {messageEntity.caption=this}
             messageRepository.save(messageEntity)
             sendDocument.document = InputFile(document.fileId)
-            println(document.fileName)
             File("./documents").mkdirs()
-            val file = File("./documents/${Date().time}-${document.fileName}")
+            val file = File("./documents/${name}")
             file.writeBytes(
                 myBot.getFromTelegram(document.fileId, myBot.botToken)
             )

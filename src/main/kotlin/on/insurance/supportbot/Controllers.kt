@@ -46,24 +46,31 @@ class OperatorController(
 class DocumentController(
     val messageRepository: MessageRepository
 ){
-    val document: String ="document"
-
-//
-//    @GetMapping("getFromFileSystem/{id}")
-//    @Throws(IOException::class)
-//    fun getFromFileSystem(@PathVariable id: Long, response: HttpServletResponse) {
-//        val byId: Optional<Attachment> = attachmentRepository.findById(id)
-//        if (byId.isPresent()) {
-//            val attachment: Attachment = byId.get()
-//            response.setHeader(
-//                "Content-Disposition",
-//                "attachment; file=\"" + attachment.getFileOriginalName().toString() + "\""
-//            )
-//            response.contentType = attachment.getContentType()
-//            val fileInputStream = FileInputStream(document.toString() + "/" + attachment.getName())
-//            FileCopyUtils.copy(fileInputStream, response.outputStream)
-//        }
-//    }
+    val document: String ="documents"
 
 
-}
+    @GetMapping("getFromFileSystem/{name}")
+    @Throws(IOException::class)
+    fun getFromFileSystem(@PathVariable name: String, response: HttpServletResponse) {
+            response.setHeader(
+                "Content-Disposition",
+                "attachment; file=\"" + name + "\""
+            )
+            val fileInputStream = FileInputStream(document + "/" + name)
+            FileCopyUtils.copy(fileInputStream, response.outputStream)
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+
