@@ -41,7 +41,7 @@ class RoleOperator(
             BotStep.CHAT -> {
                 var user:User?=group?.user
                 if (user!=null){
-//                    saveChat()
+                    saveChat()
                     sendText()
                 }
             }
@@ -71,7 +71,7 @@ class RoleOperator(
     }
 
     fun saveChat() {
-        messageService.creat(update, group!!, operator,true)
+        messageService.creat(update.message, group!!, operator)
     }
 
     fun sendText() {
@@ -81,7 +81,6 @@ class RoleOperator(
             from_chat_id = getChatId()
             message_id=messageId
         }
-//        group!!.user?.run { botService.sendMassage(this.chatId, text,) }
         group!!.user?.run { myBot.copyMessage(this.chatId,from_chat_id, message_id) }
     }
 

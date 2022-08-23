@@ -4,6 +4,7 @@ import org.hibernate.annotations.ColumnDefault
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
+import java.awt.TrayIcon
 import java.util.*
 import javax.persistence.*
 
@@ -39,9 +40,10 @@ data class MessageEntity(
     val massageId:Int,
     @ManyToOne var user: User,
     @ManyToOne var group: Group,
-    var massages: String,
-    @Enumerated(EnumType.STRING) var language: Language,
-    var readed: Boolean? = false,
+    @Enumerated(EnumType.STRING) val messageType:MessageType,
+    val text: String? = null,
+    var caption: String? = null,
+    val fileId: String? = null,
     var isActive: Boolean? = true
 ) : BaseEntity()
 
