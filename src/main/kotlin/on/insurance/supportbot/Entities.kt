@@ -61,8 +61,8 @@ class Group(
 
 @Entity
 class Operator(
-    var name: String,
-    var phoneNumber: String,
+    @Column(nullable = false) var name: String,
+    @Column(unique = true, nullable = false) var phoneNumber: String,
 ) : BaseEntity()
 @Entity
 class Admin(

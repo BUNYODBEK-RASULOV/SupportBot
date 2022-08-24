@@ -5,6 +5,7 @@ import on.insurance.supportbot.teligram.Admin
 import on.insurance.supportbot.teligram.Group
 import on.insurance.supportbot.teligram.Operator
 import on.insurance.supportbot.teligram.*
+import java.util.Date
 import javax.persistence.EnumType
 import javax.persistence.Enumerated
 
@@ -15,8 +16,8 @@ interface GroupsByOperatorId{
 
 data class GroupsByOperatorIdDto(
     var operator_id: Long,
-    var first_day: String,
-    var last_day: String,
+    var first_day: Long,
+    var last_day: Long,
 ) {
 
 }
@@ -69,3 +70,15 @@ data class UserRequest(
     var fullName: String?=null,
     var state:BotStep?=null
 )
+interface FilterByDate {
+   var avg:Short
+   var count:Int
+   var id:Long
+   var name:String
+}
+interface ChatListByOperatorId{
+    var chatId:Long
+    var createdDate:Date
+    var messagesNumber:Int
+    var operatorName:String
+}

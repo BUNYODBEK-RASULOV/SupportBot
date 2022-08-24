@@ -36,21 +36,29 @@ class OperatorController(
 
     @GetMapping("operatorlist")
     fun getAllList(): List<User> = userService.operatorList()
+}
 
-    @GetMapping("groupList")
-    fun getAllGroupList(@RequestBody dto: GroupsByOperatorIdDto): List<GroupsByOperatorId> =
-        groupService.groupsByOperatorId(dto)
-
-    @GetMapping("messageList/{groupId}")
-    fun getAllMessageList(@PathVariable groupId: Long): List<MessageEntity> =
-        messageService.getAllMessageByGroupId(groupId)
-
-
+@RestController
+@RequestMapping("api/v1/chat")
+class GroupController(
+    private val groupService: GroupService,
+    private val messageService: MessageService
+    ){
+    @GetMapping("filter")
+    fun getChatsByDateFilter(@RequestParam fromDate:Long, @RequestParam toDate:Long,pageable: Pageable):Page<FilterByDate> =
+        groupService.OperatorListByDate(fromDate,toDate,pageable)
+    @GetMapping("ChatsListByOperatorId/{id}")
+    fun ChatsListByOperatorId(@PathVariable id:Long,@RequestParam fromDate:Long, @RequestParam toDate:Long,pageable: Pageable):Page<ChatListByOperatorId> =
+        groupService.chatListOperatorId(id,fromDate,toDate,pageable)
+    @GetMapping("{groupId}")
+    fun getAllMessageByGroupId(@PathVariable groupId:Long):List<MessageEntity>{
+     return   messageService.getAllMessageByGroupId(groupId)
+    }
 }
 
 
 @RestController
-@RequestMapping("api/vi/user")
+@RequestMapping("api/v1/user")
 class UserController(private val userService: UserService) {
     @GetMapping("page")
     fun page(pageable: Pageable): Page<ResponseUser> = userService.userListWithPagination(pageable)

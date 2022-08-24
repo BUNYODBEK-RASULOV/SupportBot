@@ -41,7 +41,7 @@ class RoleOperator(
             BotStep.CHAT -> {
                 var user:User?=group?.user
                 if (user!=null){
-//                    saveChat()
+                    saveChat()
                     sendText()
                 }
             }

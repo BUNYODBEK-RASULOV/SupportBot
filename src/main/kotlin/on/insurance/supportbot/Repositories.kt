@@ -1,6 +1,5 @@
 package on.insurance.supportbot
 
-import antlr.collections.impl.LList
 import on.insurance.supportbot.teligram.*
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -11,6 +10,7 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.data.jpa.repository.support.JpaEntityInformation
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository
 import org.springframework.data.repository.NoRepositoryBean
+import java.util.*
 import javax.persistence.EntityManager
 import javax.transaction.Transactional
 
@@ -74,11 +74,26 @@ interface GroupRepository : BaseRepository<Group> {
 
     //Operator_id buyicha barcha Grouplar
     @Query(
-        """select DATE(g.created_date) kun,* from groups g
-where operator_id=?1
-  and created_date between ?2 and ?3 order by created_date""", nativeQuery = true
+        """sselect * from groups g
+         where operator_id = ?1
+           and created_date between '2022-08-20 18:09:11.093000' and '2022-08-24 18:09:11.093000'
+         order by created_date""", nativeQuery = true
     )
-    fun GroupsByOperatorId(operatorId: Long, first_day: String, last_day: String): List<GroupsByOperatorId>
+    fun GroupsByOperatorId(operatorId: Long, first_day: Date, last_day: Date): List<Group>
+
+    @Query("""select users.id as id, avg(g.ball) as avg, count(g), c.user_name as name from users
+inner join groups g on users.id = g.operator_id
+inner join contact c on users.id = c.user_id
+where  users.role='OPERATOR' and g.created_date between :fromDate and :toDate
+group by c.user_name, users.id""", nativeQuery = true)
+    fun filterDate(fromDate:Date,toDate:Date,pageable: Pageable):Page<FilterByDate>
+    @Query("""select groups.id as chatId ,groups.created_date as createdDate, count(m.id) as messagesNumber,c.user_name as operatorName from groups 
+  inner join message m on groups.id = m.group_id
+  inner join users u on u.id = groups.operator_id
+  inner join contact c on u.id = c.user_id
+where u.id=:operatorId and groups.created_date between :fromDate and :toDate
+group by c.user_name, groups.created_date, groups.id""", nativeQuery = true)
+    fun chatListOperatorId(operatorId: Long,fromDate:Date,toDate:Date,pageable: Pageable):Page<ChatListByOperatorId>
 }
 
 interface ContactRepository : BaseRepository<Contact> {

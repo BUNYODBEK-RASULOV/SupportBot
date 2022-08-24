@@ -7,12 +7,11 @@ import on.insurance.supportbot.teligram.MessageEntity
 import on.insurance.supportbot.teligram.User
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
-import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.telegram.telegrambots.meta.api.objects.Update
-import javax.persistence.EntityManager
+import java.util.*
 import kotlin.NullPointerException
 
 
@@ -39,9 +38,10 @@ interface GroupService {
     fun getGroupByOperatorId(operator: User): Group?
 
     //operator_id buyicha groupList admin uchun
-//    operator_id, first_day, last_day kirib keladi
-    fun groupsByOperatorId(groupsByOperatorIdDto: GroupsByOperatorIdDto): List<GroupsByOperatorId>
-
+      //operator_id, first_day, last_day kirib keladi
+    fun groupsByOperatorId(groupsByOperatorIdDto: GroupsByOperatorIdDto): List<Group>
+    fun OperatorListByDate(fromDate:Long,toDate:Long,pageable: Pageable):Page<FilterByDate>
+    fun chatListOperatorId(operatorId: Long,fromDate:Long,toDate:Long,pageable: Pageable):Page<ChatListByOperatorId>
 }
 
 interface MessageService {
@@ -145,8 +145,27 @@ class GroupServiceImpl(
         return groupRepository.getGroupByOperatorAndLanguageAndActive(operator.language.name)?.run { this }
     }
 
-    override fun groupsByOperatorId(dto: GroupsByOperatorIdDto): List<GroupsByOperatorId> {
-        return groupRepository.GroupsByOperatorId(dto.operator_id, dto.first_day, dto.last_day)
+    override fun groupsByOperatorId(dto: GroupsByOperatorIdDto): List<Group> {
+        val firstTime=Date(dto.first_day)
+        val lastTime=Date(dto.last_day)
+        return groupRepository.GroupsByOperatorId(dto.operator_id, firstTime,lastTime)
+    }
+
+    override fun OperatorListByDate(fromDate:Long, toDate: Long, pageable: Pageable): Page<FilterByDate> {
+        val from=Date(fromDate)
+        val to=Date(toDate)
+        return groupRepository.filterDate(from,to,pageable)
+    }
+
+    override fun chatListOperatorId(
+        operatorId: Long,
+        fromDate: Long,
+        toDate: Long,
+        pageable: Pageable
+    ): Page<ChatListByOperatorId> {
+        val from=Date(fromDate)
+        val to=Date(toDate)
+        return groupRepository.chatListOperatorId(operatorId,from,to,pageable)
     }
 }
 
@@ -187,7 +206,12 @@ class UserServiceImpl(
     }
 
     override fun checkOperator(contact: Contact, user: User): User {
-        val phoneNumber = contact.phoneNumber
+        var phoneNumber = contact.phoneNumber
+        if (phoneNumber.startsWith("+")){
+            phoneNumber=phoneNumber.substring(4)
+        }else{
+            phoneNumber=phoneNumber.substring(3)
+        }
         if (operatorRepository.existsByPhoneNumber(phoneNumber)) {
             user.run { this.role = Role.OPERATOR }
         } else {
