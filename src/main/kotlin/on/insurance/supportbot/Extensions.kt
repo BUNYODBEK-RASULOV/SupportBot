@@ -12,4 +12,3 @@ fun Boolean.ifTrue(run: () -> Unit) {
 fun Boolean.ifFalse(run: () -> Unit) {
     if (!this) run()
 }
-

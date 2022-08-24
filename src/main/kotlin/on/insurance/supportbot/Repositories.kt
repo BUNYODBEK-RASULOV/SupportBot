@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.data.jpa.repository.support.JpaEntityInformation
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository
 import org.springframework.data.repository.NoRepositoryBean
+import java.util.*
 import javax.persistence.EntityManager
 import javax.transaction.Transactional
 
@@ -43,8 +44,10 @@ interface UserRepository : BaseRepository<User> {
     @Query("select * from nova_support_bot.users u where u.chat_id = ?1", nativeQuery = true)
     fun findByChatIdd(chatId: Long): User?
 
-        @Query("select * from users u where u.role ='OPERATOR'",nativeQuery = true)
-        fun getAllOperatorListByRole():List<User>
+    @Query("select * from nova_support_bot.users u where u.role ='OPERATOR'", nativeQuery = true)
+    fun getAllOperatorListByRole(pageable: Pageable): Page<User>
+
+
     @Query(
         value = """select * from nova_support_bot.users u
     where u.deleted=false
@@ -69,20 +72,70 @@ interface GroupRepository : BaseRepository<Group> {
 
 
     fun findByOperatorId(operatorId: Long): Group?
+
     //Operator_id buyicha barcha Grouplar
-    @Query("""select DATE(g.created_date) kun,* from groups g
-where operator_id=?1
-  and created_date between ?2 and ?3 order by created_date""", nativeQuery = true)
-    fun GroupsByOperatorId(operatorId:Long,first_day:String,last_day:String):List<GroupsByOperatorId>
+    @Query(
+        """sselect * from nova_support_bot.groups g
+         where operator_id = ?1
+           and created_date between '2022-08-20 18:09:11.093000' and '2022-08-24 18:09:11.093000'
+         order by created_date""", nativeQuery = true
+    )
+    fun GroupsByOperatorId(operatorId: Long, first_day: Date, last_day: Date): List<Group>
+
+    @Query("""select users.id as id, avg(g.ball) as avg, count(g), c.user_name as name from nova_support_bot.users
+inner join nova_support_bot.groups g on users.id = g.operator_id
+inner join nova_support_bot.contact c on users.id = c.user_id
+where  users.role='OPERATOR' and g.created_date between :fromDate and :toDate
+group by c.user_name, users.id""", nativeQuery = true)
+    fun filterDate(fromDate:Date,toDate:Date,pageable: Pageable):Page<FilterByDate>
+    @Query("""select groups.id as chatId ,groups.created_date as createdDate, count(m.id) as messagesNumber,c.user_name as operatorName from nova_support_bot.groups 
+  inner join nova_support_bot.message m on groups.id = m.group_id
+  inner join nova_support_bot.users u on u.id = groups.operator_id
+  inner join nova_support_bot.contact c on u.id = c.user_id
+where u.id=:operatorId and groups.created_date between :fromDate and :toDate
+group by c.user_name, groups.created_date, groups.id""", nativeQuery = true)
+    fun chatListOperatorId(operatorId: Long,fromDate:Date,toDate:Date,pageable: Pageable):Page<ChatListByOperatorId>
 }
 
 interface ContactRepository : BaseRepository<Contact> {
+    @Query(
+        """select u.id as id, c.phone_number as telephoneNumber,c.user_name as fullName,
+       u.language as systemLanguage, u.bot_step as state
+from nova_support_bot.contact c
+inner join nova_support_bot.users u on u.id = c.user_id
+where u.deleted=false
+""", nativeQuery = true
+    )
+    fun userInfo(pageable: Pageable): Page<ResponseUser>
+
+    @Query(
+        """select u.id as id, c.phone_number as telephoneNumber,c.user_name as fullName,
+       u.language as systemLanguage, u.bot_step as state
+from nova_support_bot.contact c
+         inner join nova_support_bot.users u on u.id = c.user_id
+where u.deleted=false and u.bot_step='QUEUE'
+""", nativeQuery = true
+    )
+    fun queueInfo(pageable: Pageable): Page<ResponseUser>
+
+    @Query(
+        """select u.id as id, c.phone_number as telephoneNumber,c.user_name as fullName,
+       u.language as systemLanguage, u.bot_step as state
+from nova_support_bot.contact c
+inner join nova_support_bot.users u on u.id = c.user_id
+where u.deleted=false and u.id=:id
+""", nativeQuery = true
+    )
+    fun getUser(id:Long): ResponseUser
+
+    @Query("""select * from contact where user_id=:userId """, nativeQuery = true)
+    fun findByUsername(userId:Long): Contact?
 
 }
 
 interface LanguageRepository : BaseRepository<LanguageEntity>{}
 
-interface MessageRepository:BaseRepository<MessageEntity> {
+interface MessageRepository : BaseRepository<MessageEntity> {
     @Query(
         """select * from nova_support_bot.message m where  m.user_id=:userId and 
         m.group_id=:groupId order by created_date""", nativeQuery = true
@@ -92,6 +145,7 @@ interface MessageRepository:BaseRepository<MessageEntity> {
     @Query("""select * from nova_support_bot.message m where m.group_id=?1 order by created_date""", nativeQuery = true)
     fun getAllMessageByGroupId(groupId: Long): List<MessageEntity>
 }
+
 interface OperatorRepository : BaseRepository<Operator> {
 
     @Query("select (count(o) > 0) from Operator o where o.phoneNumber = ?1")
@@ -103,6 +157,10 @@ interface OperatorRepository : BaseRepository<Operator> {
     fun getAllOperator(): List<Operator>
 }
 
+interface AdminRepository : BaseRepository<Admin> {
+    @Query("""select * from nova_support_bot.admin a where a.username=?1""", nativeQuery = true)
+    fun findByUsername(username: String): Admin?
+}
 interface AttachmentRepository:BaseRepository<Attachment>{
 
 }

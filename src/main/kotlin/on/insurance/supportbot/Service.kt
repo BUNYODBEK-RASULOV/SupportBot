@@ -7,6 +7,10 @@ import on.insurance.supportbot.teligram.MessageEntity
 import on.insurance.supportbot.teligram.MessageType.*
 import on.insurance.supportbot.teligram.User
 import org.springframework.context.annotation.Lazy
+import org.springframework.security.core.userdetails.UserDetails
+import org.springframework.security.core.userdetails.UserDetailsService
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument
 import org.telegram.telegrambots.meta.api.objects.InputFile
@@ -14,6 +18,10 @@ import org.telegram.telegrambots.meta.api.objects.Message
 import java.io.File
 import java.util.*
 import kotlin.NullPointerException
+import org.telegram.telegrambots.meta.api.objects.Update
+import java.util.*
+import kotlin.NullPointerException
+
 
 interface UserService {
     fun getUser(chatId: Long): User
@@ -23,7 +31,13 @@ interface UserService {
     fun operatorIsActive(operator: User)
     fun emptyOperator(user: User): User?
     fun checkOperator(contact: Contact, user: User): User
-    fun operatorList():List<User>
+    fun operatorList(pageable: Pageable): Page<User>
+
+    fun userListWithPagination(pageable: Pageable): Page<ResponseUser>
+    fun queueListWithPagination(pageable: Pageable): Page<ResponseUser>
+    fun getContact(id: Long): ResponseUser
+    fun editUser(id: Long, userRequest: UserRequest)
+
 }
 
 interface GroupService {
@@ -34,15 +48,17 @@ interface GroupService {
 
     //operator_id buyicha groupList admin uchun
 //    operator_id, first_day, last_day kirib keladi
-    fun groupsByOperatorId(dto: GroupsByOperatorIdDto): List<GroupsByOperatorId>
 
+    fun groupsByOperatorId(groupsByOperatorIdDto: GroupsByOperatorIdDto): List<Group>
+    fun OperatorListByDate(fromDate:Long,toDate:Long,pageable: Pageable):Page<FilterByDate>
+    fun chatListOperatorId(operatorId: Long,fromDate:Long,toDate:Long,pageable: Pageable):Page<ChatListByOperatorId>
 }
 
 interface MessageService{
     fun creat(message:Message,group: Group,user: User)
     fun getUserMessage(group: Group):List<MessageEntity>
     //messagelar Listini group id buyicha olish
-    fun getAllMessageByGroupId(groupId:Long):List<MessageEntity>
+    fun getAllMessageByGroupId(groupId: Long): List<MessageEntity>
 }
 
 interface ContactService {
@@ -134,36 +150,19 @@ class MessageServiceImpl(
             val size=document.fileSize.toLong()
             val contentType="png"
 
-            val attachment=Attachment(originalName,size,contentType,name)
-            val messageEntity=MessageEntity(user.chatId,message.messageId,user,group,PHOTO,attachmentRepository.save(attachment))
-            message.caption?.run {messageEntity.caption=this}
-            messageRepository.save(messageEntity)
-            sendDocument.document = InputFile(document.fileId)
-            File("./documents").mkdirs()
-            val file = File("./documents/${name}")
-            file.writeBytes(
-                myBot.getFromTelegram(document.fileId, myBot.botToken)
-            )
-        }
-        message.videoNote?.run {
-            val document = message.videoNote
-            val originalName="videoNote.mp4"
-            val name="${Date().time}-${originalName}"
-            val size=document.fileSize.toLong()
-            val contentType="mp4"
+        messageRepository.save(MessageEntity(chatId,massageId,user, group, massage, user.language))
+    }
 
-            val attachment=Attachment(originalName,size,contentType,name)
-            val messageEntity=MessageEntity(user.chatId,message.messageId,user,group,VIDEO,attachmentRepository.save(attachment))
-            message.caption?.run {messageEntity.caption=this}
-            messageRepository.save(messageEntity)
-            sendDocument.document = InputFile(document.fileId)
-            File("./documents").mkdirs()
-            val file = File("./documents/${name}")
-            file.writeBytes(
-                myBot.getFromTelegram(document.fileId, myBot.botToken)
-            )
+    override fun creat(update: Update, group: Group, user: User, readed: Boolean) {
+        var chatId:Long=1
+        var massageId:Int=0
+        var massage:String=""
+        update.message?.run {
+            chatId=this.chatId
+            massageId=this.messageId
+            massage=this.text
         }
-
+        messageRepository.save(MessageEntity(chatId,massageId,user, group, massage, user.language, readed))
     }
 
 
@@ -177,7 +176,7 @@ class MessageServiceImpl(
     }
 
     override fun getAllMessageByGroupId(groupId: Long): List<MessageEntity> {
-      return  messageRepository.getAllMessageByGroupId(groupId)
+        return messageRepository.getAllMessageByGroupId(groupId)
     }
 }
 
@@ -212,15 +211,35 @@ class GroupServiceImpl(
         return groupRepository.getGroupByOperatorAndLanguageAndActive(operator.language.name)?.run { this }
     }
 
-    override fun groupsByOperatorId(dto: GroupsByOperatorIdDto): List<GroupsByOperatorId> {
-        return groupRepository.GroupsByOperatorId(dto.operator_id,dto.first_day,dto.last_day)
+    override fun groupsByOperatorId(dto: GroupsByOperatorIdDto): List<Group> {
+        val firstTime=Date(dto.first_day)
+        val lastTime=Date(dto.last_day)
+        return groupRepository.GroupsByOperatorId(dto.operator_id, firstTime,lastTime)
+    }
+
+    override fun OperatorListByDate(fromDate:Long, toDate: Long, pageable: Pageable): Page<FilterByDate> {
+        val from=Date(fromDate)
+        val to=Date(toDate)
+        return groupRepository.filterDate(from,to,pageable)
+    }
+
+    override fun chatListOperatorId(
+        operatorId: Long,
+        fromDate: Long,
+        toDate: Long,
+        pageable: Pageable
+    ): Page<ChatListByOperatorId> {
+        val from=Date(fromDate)
+        val to=Date(toDate)
+        return groupRepository.chatListOperatorId(operatorId,from,to,pageable)
     }
 }
 
 @Service
 class UserServiceImpl(
     private val userRepository: UserRepository,
-    private val operatorRepository: OperatorRepository
+    private val operatorRepository: OperatorRepository,
+    private val contactRepository: ContactRepository
 ) : UserService {
     override fun getUser(chatId: Long): User {
         return userRepository.findByChatIdd(chatId)?.run { this } ?: createUser(chatId)
@@ -253,7 +272,12 @@ class UserServiceImpl(
     }
 
     override fun checkOperator(contact: Contact, user: User): User {
-        val phoneNumber = contact.phoneNumber
+        var phoneNumber = contact.phoneNumber
+        if (phoneNumber.startsWith("+")){
+            phoneNumber=phoneNumber.substring(4)
+        }else{
+            phoneNumber=phoneNumber.substring(3)
+        }
         if (operatorRepository.existsByPhoneNumber(phoneNumber)) {
             user.run { this.role = Role.OPERATOR }
         } else {
@@ -262,9 +286,35 @@ class UserServiceImpl(
         return user
     }
 
-    override fun operatorList(): List<User>{
-      return  userRepository.getAllOperatorListByRole()
+    override fun operatorList(pageable: Pageable): Page<User> {
+        return userRepository.getAllOperatorListByRole(pageable)
     }
+
+
+    //this is for admin  user list with pagination
+    override fun userListWithPagination(pageable: Pageable): Page<ResponseUser> = contactRepository.userInfo(pageable)
+    override fun queueListWithPagination(pageable: Pageable): Page<ResponseUser> = contactRepository.queueInfo(pageable)
+
+
+    override fun getContact(id: Long): ResponseUser = contactRepository.getUser(id)
+    override fun editUser(id: Long, userRequest: UserRequest) {
+        val user = userRepository.findByIdNotDeleted(id) ?: throw NullPointerException("we have not this user")
+        val contact = contactRepository.findByUsername(id) ?: throw NullPointerException("we have not this user")
+        userRequest.run {
+
+            fullName?.run {
+                contact.userName = fullName!!
+                contactRepository.save(contact)
+            }
+            state?.run {
+                user.botStep = state!!
+                userRepository.save(user)
+            }
+
+        }
+    }
+
+
 }
 
 @Service
@@ -305,6 +355,19 @@ class OperatorServiceImpl(
     }
 
     override fun listOfOperator() = repository.getAllOperator().map(OperatorDto.Companion::toDto)
+}
+
+@Service
+class AuthService(
+    private val adminRepository: AdminRepository
+):UserDetailsService{
+
+    @Throws(NullPointerException::class)
+    override fun loadUserByUsername(username: String): UserDetails {
+        val admin = adminRepository.findByUsername(username)?:throw NullPointerException("Invalid username or password")
+        return admin
+    }
+
 }
 
 
