@@ -44,7 +44,7 @@ interface UserRepository : BaseRepository<User> {
     fun findByChatIdd(chatId: Long): User?
 
     @Query("select * from users u where u.role ='OPERATOR'", nativeQuery = true)
-    fun getAllOperatorListByRole(): List<User>
+    fun getAllOperatorListByRole(pageable: Pageable): Page<User>
 
 
     @Query(
@@ -106,6 +106,16 @@ where u.deleted=false
 """, nativeQuery = true
     )
     fun userInfo(pageable: Pageable): Page<ResponseUser>
+
+    @Query(
+        """select u.id as id, c.phone_number as telephoneNumber,c.user_name as fullName,
+       u.language as systemLanguage, u.bot_step as state
+from contact c
+         inner join users u on u.id = c.user_id
+where u.deleted=false and u.bot_step='QUEUE'
+""", nativeQuery = true
+    )
+    fun queueInfo(pageable: Pageable): Page<ResponseUser>
 
     @Query(
         """select u.id as id, c.phone_number as telephoneNumber,c.user_name as fullName,

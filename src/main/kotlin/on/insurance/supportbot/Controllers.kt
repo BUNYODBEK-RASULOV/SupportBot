@@ -25,6 +25,9 @@ class OperatorController(
     @PostMapping
     fun create(@RequestBody dto: OperatorCreateDto) = service.create(dto)
 
+    @PutMapping("{id}")
+    fun update(@PathVariable id: Long, @RequestBody dto: OperatorUpdateDto) = service.update(id, dto)
+
     @GetMapping("{id}")
     fun get(@PathVariable id: Long): OperatorDto = service.get(id)
 
@@ -37,6 +40,12 @@ class OperatorController(
     @GetMapping("operatorlist")
     fun getAllList(): List<User> = userService.operatorList()
 }
+    @GetMapping()
+    fun getAllList(pageable: Pageable): Page<User> = userService.operatorList(pageable)
+
+    @GetMapping("groupList")
+    fun getAllGroupList(@RequestBody dto: GroupsByOperatorIdDto): List<GroupsByOperatorId> =
+        groupService.groupsByOperatorId(dto)
 
 @RestController
 @RequestMapping("api/v1/chat")
@@ -60,15 +69,23 @@ class GroupController(
 @RestController
 @RequestMapping("api/v1/user")
 class UserController(private val userService: UserService) {
-    @GetMapping("page")
+
+    @GetMapping()
     fun page(pageable: Pageable): Page<ResponseUser> = userService.userListWithPagination(pageable)
 
     @GetMapping("{id}")
     fun getUser(@PathVariable("id") id: Long): ResponseUser = userService.getContact(id)
 
     @PutMapping("{id}")
-    fun editUser(@PathVariable("id") id: Long, @RequestBody  userRequest: UserRequest)  = userService.editUser(id,userRequest)
+    fun editUser(@PathVariable("id") id: Long, @RequestBody userRequest: UserRequest) =
+        userService.editUser(id, userRequest)
+}
 
+@RestController
+@RequestMapping("api/v1/queue")
+class QueueController(private val userService: UserService) {
+    @GetMapping()
+    fun queue(pageable: Pageable): Page<ResponseUser> = userService.queueListWithPagination(pageable)
 }
 @RestController
 @RequestMapping("/api/v1/auth")

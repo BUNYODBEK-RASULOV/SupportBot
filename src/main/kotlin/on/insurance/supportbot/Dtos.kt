@@ -66,7 +66,6 @@ interface ResponseUser {
 
 }
 data class UserRequest(
-
     var fullName: String?=null,
     var state:BotStep?=null
 )

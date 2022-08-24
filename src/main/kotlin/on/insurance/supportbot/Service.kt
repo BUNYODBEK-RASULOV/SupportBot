@@ -23,10 +23,12 @@ interface UserService {
     fun operatorIsActive(operator: User)
     fun emptyOperator(user: User): User?
     fun checkOperator(contact: Contact, user: User): User
-    fun operatorList(): List<User>
+    fun operatorList(pageable: Pageable): Page<User>
 
     fun userListWithPagination(pageable: Pageable): Page<ResponseUser>
-    fun getContact(id: Long): ResponseUser
+    fun queueListWithPagination(pageable: Pageable): Page<ResponseUser>
+    fun
+            getContact(id: Long): ResponseUser
     fun editUser(id: Long, userRequest: UserRequest)
 
 }
@@ -220,13 +222,16 @@ class UserServiceImpl(
         return user
     }
 
-    override fun operatorList(): List<User> {
-        return userRepository.getAllOperatorListByRole()
+    override fun operatorList(pageable: Pageable): Page<User> {
+        return userRepository.getAllOperatorListByRole(pageable)
     }
 
 
     //this is for admin  user list with pagination
     override fun userListWithPagination(pageable: Pageable): Page<ResponseUser> = contactRepository.userInfo(pageable)
+    override fun queueListWithPagination(pageable: Pageable): Page<ResponseUser> = contactRepository.queueInfo(pageable)
+
+
     override fun getContact(id: Long): ResponseUser = contactRepository.getUser(id)
     override fun editUser(id: Long, userRequest: UserRequest) {
         val user = userRepository.findByIdNotDeleted(id) ?: throw NullPointerException("we have not this user")

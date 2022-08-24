@@ -1,9 +1,9 @@
 POST localhost:8082/api/v1/operator
 Content-Type: application/json
-Authorization: BearereyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJBZG1pbiIsImlhdCI6MTY2MTI1MDE0NiwiZXhwIjoxNjYxMjU3MzQ2fQ.JPOsaqFXbbg8PqWtVCWpvdpE3aq2x652ffNv_6Pc4Bc
+
 {
-  "name": "karimxon2",
-  "phoneNumber": "998946099785"
+  "name": "karimxon1",
+  "phoneNumber": "998946099784"
 }
 
 ###
@@ -19,19 +19,17 @@ Content-Type: application/json
 
 ###
 
-GET localhost:8082/api/v1/operator/list
+GET localhost:8082/api/v1/operator/?size=5&page=0
 
 
 ###
 
-#DELETE localhost:8082/api/v1/operator/1
-POST localhost:8082/api/v1/auth/login
-Content-Type: application/json
-
-{
-  "username":"Admin",
-  "password": 12345
-}
+DELETE localhost:8082/api/v1/operator/1
+###
+GET localhost:8082/api/vi/user/queue
+###
+GET localhost:8082/api/vi/user/1
+###
 
 PUT localhost:8082/api/vi/user/1
 Content-Type: application/json
