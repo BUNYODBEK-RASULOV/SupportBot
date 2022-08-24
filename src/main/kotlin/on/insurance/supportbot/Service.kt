@@ -27,8 +27,7 @@ interface UserService {
 
     fun userListWithPagination(pageable: Pageable): Page<ResponseUser>
     fun queueListWithPagination(pageable: Pageable): Page<ResponseUser>
-    fun
-            getContact(id: Long): ResponseUser
+    fun getContact(id: Long): ResponseUser
     fun editUser(id: Long, userRequest: UserRequest)
 
 }

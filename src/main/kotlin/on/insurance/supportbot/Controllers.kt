@@ -12,6 +12,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.web.bind.annotation.*
+import javax.validation.constraints.NotNull
 
 
 @RestController
@@ -30,22 +31,12 @@ class OperatorController(
 
     @GetMapping("{id}")
     fun get(@PathVariable id: Long): OperatorDto = service.get(id)
-
-    @PutMapping("{id}")
-    fun update(@PathVariable id: Long, @RequestBody dto: OperatorUpdateDto) = service.update(id, dto)
-
     @DeleteMapping("{id}")
     fun delete(@PathVariable id: Long) = service.delete(id)
 
-    @GetMapping("operatorlist")
-    fun getAllList(): List<User> = userService.operatorList()
-}
-    @GetMapping()
+    @GetMapping
     fun getAllList(pageable: Pageable): Page<User> = userService.operatorList(pageable)
-
-    @GetMapping("groupList")
-    fun getAllGroupList(@RequestBody dto: GroupsByOperatorIdDto): List<GroupsByOperatorId> =
-        groupService.groupsByOperatorId(dto)
+}
 
 @RestController
 @RequestMapping("api/v1/chat")
@@ -71,7 +62,7 @@ class GroupController(
 class UserController(private val userService: UserService) {
 
     @GetMapping()
-    fun page(pageable: Pageable): Page<ResponseUser> = userService.userListWithPagination(pageable)
+    fun page(@NotNull  pageable: Pageable): Page<ResponseUser> = userService.userListWithPagination(pageable)
 
     @GetMapping("{id}")
     fun getUser(@PathVariable("id") id: Long): ResponseUser = userService.getContact(id)
