@@ -13,6 +13,7 @@ import org.telegram.telegrambots.meta.api.objects.InputFile
 import org.telegram.telegrambots.meta.api.objects.Message
 import java.io.File
 import java.util.*
+import kotlin.NullPointerException
 
 interface UserService {
     fun getUser(chatId: Long): User
@@ -33,7 +34,7 @@ interface GroupService {
 
     //operator_id buyicha groupList admin uchun
 //    operator_id, first_day, last_day kirib keladi
-    fun groupsByOperatorId(groupsByOperatorIdDto: GroupsByOperatorIdDto): List<GroupsByOperatorId>
+    fun groupsByOperatorId(dto: GroupsByOperatorIdDto): List<GroupsByOperatorId>
 
 }
 
@@ -57,6 +58,7 @@ interface OperatorService {
     fun listOfOperator(): List<OperatorDto>
 
 }
+
 
 @Service
 class MessageServiceImpl(
@@ -89,6 +91,78 @@ class MessageServiceImpl(
                 myBot.getFromTelegram(document.fileId, myBot.botToken)
             )
         }
+        message.audio?.run {
+            val document = message.audio
+            val originalName=document.fileName
+            val name="${Date().time}-${originalName}"
+            val size=document.fileSize
+            val contentType=document.mimeType
+
+            val attachment=Attachment(originalName,size,contentType,name)
+            val messageEntity=MessageEntity(user.chatId,message.messageId,user,group,AUDIO,attachmentRepository.save(attachment))
+            message.caption?.run {messageEntity.caption=this}
+            messageRepository.save(messageEntity)
+            sendDocument.document = InputFile(document.fileId)
+            File("./documents").mkdirs()
+            val file = File("./documents/${name}")
+            file.writeBytes(
+                myBot.getFromTelegram(document.fileId, myBot.botToken)
+            )
+        }
+        message.voice?.run {
+            val document = message.voice
+            val originalName="voice.mp3"
+            val name="${Date().time}-${originalName}"
+            val size=document.fileSize
+            val contentType=document.mimeType
+
+            val attachment=Attachment(originalName,size,contentType,name)
+            val messageEntity=MessageEntity(user.chatId,message.messageId,user,group,VOICE,attachmentRepository.save(attachment))
+            message.caption?.run {messageEntity.caption=this}
+            messageRepository.save(messageEntity)
+            sendDocument.document = InputFile(document.fileId)
+            File("./documents").mkdirs()
+            val file = File("./documents/${name}")
+            file.writeBytes(
+                myBot.getFromTelegram(document.fileId, myBot.botToken)
+            )
+        }
+        message.photo?.run {
+            val document = message.photo[3]
+            val originalName="photo.png"
+            val name="${Date().time}-${originalName}"
+            val size=document.fileSize.toLong()
+            val contentType="png"
+
+            val attachment=Attachment(originalName,size,contentType,name)
+            val messageEntity=MessageEntity(user.chatId,message.messageId,user,group,PHOTO,attachmentRepository.save(attachment))
+            message.caption?.run {messageEntity.caption=this}
+            messageRepository.save(messageEntity)
+            sendDocument.document = InputFile(document.fileId)
+            File("./documents").mkdirs()
+            val file = File("./documents/${name}")
+            file.writeBytes(
+                myBot.getFromTelegram(document.fileId, myBot.botToken)
+            )
+        }
+        message.videoNote?.run {
+            val document = message.videoNote
+            val originalName="videoNote.mp4"
+            val name="${Date().time}-${originalName}"
+            val size=document.fileSize.toLong()
+            val contentType="mp4"
+
+            val attachment=Attachment(originalName,size,contentType,name)
+            val messageEntity=MessageEntity(user.chatId,message.messageId,user,group,VIDEO,attachmentRepository.save(attachment))
+            message.caption?.run {messageEntity.caption=this}
+            messageRepository.save(messageEntity)
+            sendDocument.document = InputFile(document.fileId)
+            File("./documents").mkdirs()
+            val file = File("./documents/${name}")
+            file.writeBytes(
+                myBot.getFromTelegram(document.fileId, myBot.botToken)
+            )
+        }
 
     }
 
@@ -97,7 +171,7 @@ class MessageServiceImpl(
 
     override fun getUserMessage(group: Group): List<MessageEntity> {
         messageRepository.getUserMessage(group.user!!.id!!, group.id!!)?.run {
-            return mutableListOf()
+            return this
         }
         return emptyList()
     }

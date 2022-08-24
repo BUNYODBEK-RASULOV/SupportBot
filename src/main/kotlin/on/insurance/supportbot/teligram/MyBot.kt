@@ -30,6 +30,8 @@ class MyBot(
     override fun getBotToken(): String = token
 
     override fun onUpdateReceived(update: Update) {
+
+        println(update.message)
         update.callbackQuery?.run { botService.inline(update) }
         update.message?.run { botService.massage(update) }
     }

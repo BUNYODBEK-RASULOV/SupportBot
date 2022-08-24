@@ -69,8 +69,22 @@ class DocumentController(
 
 
 
+//
+//    @GetMapping("getFromFileSystem/{id}")
+//    @Throws(IOException::class)
+//    fun getFromFileSystem(@PathVariable id: Long, response: HttpServletResponse) {
+//        val byId: Optional<Attachment> = attachmentRepository.findById(id)
+//        if (byId.isPresent()) {
+//            val attachment: Attachment = byId.get()
+//            response.setHeader(
+//                "Content-Disposition",
+//                "attachment; file=\"" + attachment.getFileOriginalName().toString() + "\""
+//            )
+//            response.contentType = attachment.getContentType()
+//            val fileInputStream = FileInputStream(document.toString() + "/" + attachment.getName())
+//            FileCopyUtils.copy(fileInputStream, response.outputStream)
+//        }
+//    }
 
 
     }
-
-

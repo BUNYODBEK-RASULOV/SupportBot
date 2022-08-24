@@ -40,13 +40,13 @@ class BaseRepositoryImpl<T : BaseEntity>(
 
 
 interface UserRepository : BaseRepository<User> {
-    @Query("select * from users u where u.chat_id = ?1", nativeQuery = true)
+    @Query("select * from nova_support_bot.users u where u.chat_id = ?1", nativeQuery = true)
     fun findByChatIdd(chatId: Long): User?
 
         @Query("select * from users u where u.role ='OPERATOR'",nativeQuery = true)
         fun getAllOperatorListByRole():List<User>
     @Query(
-        value = """select * from users u
+        value = """select * from nova_support_bot.users u
     where u.deleted=false
      and u.is_active=true
      and u.role='OPERATOR' and u.language=:language limit 1""", nativeQuery = true
@@ -55,14 +55,14 @@ interface UserRepository : BaseRepository<User> {
 }
 
 interface GroupRepository : BaseRepository<Group> {
-    @Query("select * from groups g where g.user_id = ?1 and g.deleted = false ", nativeQuery = true)
+    @Query("select * from nova_support_bot.groups g where g.user_id = ?1 and g.deleted = false ", nativeQuery = true)
     fun getGroupByUserIdAndActive(userId: Long): Group?
 
-    @Query("select * from groups g where g.operator_id = ?1 and g.is_active = true", nativeQuery = true)
+    @Query("select * from nova_support_bot.groups g where g.operator_id = ?1 and g.is_active = true", nativeQuery = true)
     fun getGroupByOperatorIdAndActive(operatorId: Long): Group?
 
     @Query(
-        """select * from groups g where g.is_active=true and g.language=:language and
+        """select * from nova_support_bot.groups g where g.is_active=true and g.language=:language and
     g.operator_id is null and g.deleted = false order by created_date limit 1""", nativeQuery = true
     )
     fun getGroupByOperatorAndLanguageAndActive(language: String): Group?
@@ -80,14 +80,16 @@ interface ContactRepository : BaseRepository<Contact> {
 
 }
 
+interface LanguageRepository : BaseRepository<LanguageEntity>{}
+
 interface MessageRepository:BaseRepository<MessageEntity> {
     @Query(
-        """select * from message m where  m.user_id=:userId and 
+        """select * from nova_support_bot.message m where  m.user_id=:userId and 
         m.group_id=:groupId order by created_date""", nativeQuery = true
     )
     fun getUserMessage(userId: Long, groupId: Long): List<MessageEntity>?
 
-    @Query("""select * from message m where m.group_id=?1 order by created_date""", nativeQuery = true)
+    @Query("""select * from nova_support_bot.message m where m.group_id=?1 order by created_date""", nativeQuery = true)
     fun getAllMessageByGroupId(groupId: Long): List<MessageEntity>
 }
 interface OperatorRepository : BaseRepository<Operator> {
@@ -96,7 +98,7 @@ interface OperatorRepository : BaseRepository<Operator> {
     fun existsByPhoneNumber(phoneNumber: String): Boolean
 
     @Query(
-        """select * from operator where deleted=false""", nativeQuery = true
+        """select * from nova_support_bot.operator where deleted=false""", nativeQuery = true
     )
     fun getAllOperator(): List<Operator>
 }

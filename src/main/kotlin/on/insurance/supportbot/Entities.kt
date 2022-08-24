@@ -53,14 +53,22 @@ class Group(
     @ManyToOne var user: User? = null,
     @ManyToOne var operator: User? = null,
     @Enumerated(EnumType.STRING) var language: Language?,
+    var isRead:Boolean=false,
     var isActive: Boolean = true,
     var ball:Int=0,
 ) : BaseEntity()
 
-@Entity
+ @Entity
 class Operator(
+     var languages: Int,
     var name: String,
     var phoneNumber: String,
+) : BaseEntity()
+
+@Entity
+class LanguageEntity(
+    @ManyToMany var operator: List<User>,
+    @Enumerated(EnumType.STRING) var language: Language?,
 ) : BaseEntity()
 
 @Entity
