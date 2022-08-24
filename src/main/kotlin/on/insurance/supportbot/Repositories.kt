@@ -88,11 +88,12 @@ inner join nova_support_bot.contact c on users.id = c.user_id
 where  users.role='OPERATOR' and g.created_date between :fromDate and :toDate
 group by c.user_name, users.id""", nativeQuery = true)
     fun filterDate(fromDate:Date,toDate:Date,pageable: Pageable):Page<FilterByDate>
-    @Query("""select groups.id as chatId ,groups.created_date as createdDate, count(m.id) as messagesNumber,c.user_name as operatorName from nova_support_bot.groups 
-  inner join nova_support_bot.message m on groups.id = m.group_id
-  inner join nova_support_bot.users u on u.id = groups.operator_id
-  inner join nova_support_bot.contact c on u.id = c.user_id
-where u.id=:operatorId and groups.created_date between :fromDate and :toDate
+    @Query("""select groups.id as chatId ,groups.created_date as createdDate, count(m.id) as messagesNumber,
+       c.user_name as operatorName from nova_support_bot.groups
+        inner join nova_support_bot.message m on groups.id = m.group_id
+        inner join nova_support_bot.users u on u.id = groups.operator_id
+    inner join nova_support_bot.contact c on u.id = c.user_id
+where u.id=:operatorId and groups.created_date between :fromDate  and :toDate
 group by c.user_name, groups.created_date, groups.id""", nativeQuery = true)
     fun chatListOperatorId(operatorId: Long,fromDate:Date,toDate:Date,pageable: Pageable):Page<ChatListByOperatorId>
 }
