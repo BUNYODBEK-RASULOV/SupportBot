@@ -133,7 +133,7 @@ where u.deleted=false and u.id=:id
 
 }
 
-interface LanguageRepository : BaseRepository<LanguageEntity>{}
+
 
 interface MessageRepository : BaseRepository<MessageEntity> {
     @Query(

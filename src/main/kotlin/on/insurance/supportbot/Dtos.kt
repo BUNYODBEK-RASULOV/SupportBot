@@ -13,15 +13,12 @@ import javax.persistence.Enumerated
 interface GroupsByOperatorId {
     val kun: String
     val group: Group
-
+}
     data class GroupsByOperatorIdDto(
         var operator_id: Long,
         var first_day: Long,
         var last_day: Long,
-    ) {
-
-    }
-
+    )
 
 data class OperatorCreateDto(
     var languages:List<Int>,

@@ -17,10 +17,8 @@ import org.telegram.telegrambots.meta.api.objects.InputFile
 import org.telegram.telegrambots.meta.api.objects.Message
 import java.io.File
 import java.util.*
-import kotlin.NullPointerException
 import org.telegram.telegrambots.meta.api.objects.Update
 import java.util.*
-import kotlin.NullPointerException
 
 
 interface UserService {
@@ -85,20 +83,27 @@ class MessageServiceImpl(
 ) : MessageService {
     override fun creat(message:Message, group: Group, user: User) {
         val sendDocument = SendDocument()
-        message.caption?.run {  }
+        message.caption?.run { }
         message.text?.run {
-            messageRepository.save(MessageEntity(user.chatId,message.messageId,user,group,TEXT,null,this))
+            messageRepository.save(MessageEntity(user.chatId, message.messageId, user, group, TEXT, null, this))
         }
         message.document?.run {
             val document = message.document
-            val originalName=document.fileName
-            val name="${Date().time}-${originalName}"
-            val size=document.fileSize
-            val contentType=document.mimeType
+            val originalName = document.fileName
+            val name = "${Date().time}-${originalName}"
+            val size = document.fileSize
+            val contentType = document.mimeType
 
-            val attachment=Attachment(originalName,size,contentType,name)
-            val messageEntity=MessageEntity(user.chatId,message.messageId,user,group,DOCUMENT,attachmentRepository.save(attachment))
-            message.caption?.run {messageEntity.caption=this}
+            val attachment = Attachment(originalName, size, contentType, name)
+            val messageEntity = MessageEntity(
+                user.chatId,
+                message.messageId,
+                user,
+                group,
+                DOCUMENT,
+                attachmentRepository.save(attachment)
+            )
+            message.caption?.run { messageEntity.caption = this }
             messageRepository.save(messageEntity)
             sendDocument.document = InputFile(document.fileId)
             File("./documents").mkdirs()
@@ -109,14 +114,15 @@ class MessageServiceImpl(
         }
         message.audio?.run {
             val document = message.audio
-            val originalName=document.fileName
-            val name="${Date().time}-${originalName}"
-            val size=document.fileSize
-            val contentType=document.mimeType
+            val originalName = document.fileName
+            val name = "${Date().time}-${originalName}"
+            val size = document.fileSize
+            val contentType = document.mimeType
 
-            val attachment=Attachment(originalName,size,contentType,name)
-            val messageEntity=MessageEntity(user.chatId,message.messageId,user,group,AUDIO,attachmentRepository.save(attachment))
-            message.caption?.run {messageEntity.caption=this}
+            val attachment = Attachment(originalName, size, contentType, name)
+            val messageEntity =
+                MessageEntity(user.chatId, message.messageId, user, group, AUDIO, attachmentRepository.save(attachment))
+            message.caption?.run { messageEntity.caption = this }
             messageRepository.save(messageEntity)
             sendDocument.document = InputFile(document.fileId)
             File("./documents").mkdirs()
@@ -127,14 +133,15 @@ class MessageServiceImpl(
         }
         message.voice?.run {
             val document = message.voice
-            val originalName="voice.mp3"
-            val name="${Date().time}-${originalName}"
-            val size=document.fileSize
-            val contentType=document.mimeType
+            val originalName = "voice.mp3"
+            val name = "${Date().time}-${originalName}"
+            val size = document.fileSize
+            val contentType = document.mimeType
 
-            val attachment=Attachment(originalName,size,contentType,name)
-            val messageEntity=MessageEntity(user.chatId,message.messageId,user,group,VOICE,attachmentRepository.save(attachment))
-            message.caption?.run {messageEntity.caption=this}
+            val attachment = Attachment(originalName, size, contentType, name)
+            val messageEntity =
+                MessageEntity(user.chatId, message.messageId, user, group, VOICE, attachmentRepository.save(attachment))
+            message.caption?.run { messageEntity.caption = this }
             messageRepository.save(messageEntity)
             sendDocument.document = InputFile(document.fileId)
             File("./documents").mkdirs()
@@ -145,26 +152,24 @@ class MessageServiceImpl(
         }
         message.photo?.run {
             val document = message.photo[3]
-            val originalName="photo.png"
-            val name="${Date().time}-${originalName}"
-            val size=document.fileSize.toLong()
-            val contentType="png"
+            val originalName = "photo.png"
+            val name = "${Date().time}-${originalName}"
+            val size = document.fileSize.toLong()
+            val contentType = "png"
 
-        messageRepository.save(MessageEntity(chatId,massageId,user, group, massage, user.language))
-    }
-
-    override fun creat(update: Update, group: Group, user: User, readed: Boolean) {
-        var chatId:Long=1
-        var massageId:Int=0
-        var massage:String=""
-        update.message?.run {
-            chatId=this.chatId
-            massageId=this.messageId
-            massage=this.text
+            val attachment = Attachment(originalName, size, contentType, name)
+            val messageEntity =
+                MessageEntity(user.chatId, message.messageId, user, group,PHOTO, attachmentRepository.save(attachment))
+            message.caption?.run { messageEntity.caption = this }
+            messageRepository.save(messageEntity)
+            sendDocument.document = InputFile(document.fileId)
+            File("./documents").mkdirs()
+            val file = File("./documents/${name}")
+            file.writeBytes(
+                myBot.getFromTelegram(document.fileId, myBot.botToken)
+            )
         }
-        messageRepository.save(MessageEntity(chatId,massageId,user, group, massage, user.language, readed))
     }
-
 
 
 
@@ -193,7 +198,6 @@ class GroupServiceImpl(
     override fun getGroupByUserId(user: User): Group {
         return groupRepository.getGroupByUserIdAndActive(user.id!!).run { this } ?: createGroup(user)
     }
-
 
     fun createGroup(user: User): Group {
         val emptyOperator = userService.emptyOperator(user)

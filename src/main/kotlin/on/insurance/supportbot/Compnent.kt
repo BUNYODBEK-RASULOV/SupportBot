@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component
 class DataLoader(
     private val adminRepository: AdminRepository,
     private val passwordEncoder: PasswordEncoder,
+
     @Value("\${spring.datasource.initialization-mode}")
     private val initialModeType: String
 ):CommandLineRunner{

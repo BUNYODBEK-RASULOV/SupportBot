@@ -1,8 +1,9 @@
 server:
-  port: 8087
+  port: 8082
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
+    initialization-mode: always
     url: jdbc:postgresql://localhost:5432/supportBot
     username: postgres
     password: 1
@@ -17,8 +18,11 @@ spring:
           lob:
             non_contextual_creation: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     show-sql: true
+
+
+
 
 telegram:
   botName: '@insurance_on_bot'

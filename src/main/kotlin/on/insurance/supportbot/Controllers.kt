@@ -8,10 +8,10 @@ import on.insurance.supportbot.teligram.User
 import org.springframework.util.FileCopyUtils
 import org.springframework.http.HttpEntity
 import org.springframework.http.ResponseEntity
-import org.springframework.security.authentication.AuthenticationManager
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.security.authentication.AuthenticationManager
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.web.bind.annotation.*
 import java.io.FileInputStream
 import java.io.IOException
@@ -28,7 +28,7 @@ class OperatorController(
     private val messageService: MessageService
 ) {
     @PostMapping
-    fun create(@RequestBody dto: OperatorCreateDto) = service.create(dto)
+    fun create(@RequestBody dto:OperatorCreateDto) = service.create(dto)
 
     @GetMapping("{id}")
     fun get(@PathVariable id: Long): OperatorDto = service.get(id)
@@ -49,24 +49,40 @@ class OperatorController(
 class GroupController(
     private val groupService: GroupService,
     private val messageService: MessageService
-    ){
+    ) {
     @GetMapping("filter")
-    fun getChatsByDateFilter(@RequestParam fromDate:Long, @RequestParam toDate:Long,pageable: Pageable):Page<FilterByDate> =
-        groupService.OperatorListByDate(fromDate,toDate,pageable)
+    fun getChatsByDateFilter(
+        @RequestParam fromDate: Long,
+        @RequestParam toDate: Long,
+        pageable: Pageable
+    ): Page<FilterByDate> =
+        groupService.OperatorListByDate(fromDate, toDate, pageable)
+
     @GetMapping("ChatsListByOperatorId/{id}")
-    fun ChatsListByOperatorId(@PathVariable id:Long,@RequestParam fromDate:Long, @RequestParam toDate:Long,pageable: Pageable):Page<ChatListByOperatorId> =
-        groupService.chatListOperatorId(id,fromDate,toDate,pageable)
+    fun ChatsListByOperatorId(
+        @PathVariable id: Long,
+        @RequestParam fromDate: Long,
+        @RequestParam toDate: Long,
+        pageable: Pageable
+    ): Page<ChatListByOperatorId> =
+        groupService.chatListOperatorId(id, fromDate, toDate, pageable)
+
     @GetMapping("{groupId}")
-    fun getAllMessageByGroupId(@PathVariable groupId:Long):List<MessageEntity>{
-     return   messageService.getAllMessageByGroupId(groupId)
+    fun getAllMessageByGroupId(@PathVariable groupId: Long): List<MessageEntity> {
+        return messageService.getAllMessageByGroupId(groupId)
     }
-}
+
 
     @GetMapping("groupList")
-    fun getAllGroupList(@RequestBody dto: GroupsByOperatorIdDto): List<GroupsByOperatorId> = groupService.groupsByOperatorId(dto)
+    fun getAllGroupList(@RequestBody dto: GroupsByOperatorIdDto): List<Group> =
+        groupService.groupsByOperatorId(dto)
 
     @GetMapping("messageList/{groupId}")
-    fun getAllMessageList(@PathVariable groupId:Long):List<MessageEntity> = messageService.getAllMessageByGroupId(groupId)
+    fun getAllMessageList(@PathVariable groupId: Long): List<MessageEntity> =
+        messageService.getAllMessageByGroupId(groupId)
+}
+
+
 
 @RestController
 @RequestMapping("api/v1/user")
@@ -111,7 +127,6 @@ class AuthController(
 @RestController
 @RequestMapping("/api/v1/document")
 class DocumentController(
-    val messageRepository: MessageRepository
 ){
     val document: String ="documents"
 

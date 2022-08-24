@@ -69,11 +69,6 @@ class Operator(
     var phoneNumber: String,
 ) : BaseEntity()
 
-@Entity
-class LanguageEntity(
-    @ManyToMany var operator: List<User>,
-    @Enumerated(EnumType.STRING) var language: Language?,
-) : BaseEntity()
 
 @Entity
 class Attachment(
