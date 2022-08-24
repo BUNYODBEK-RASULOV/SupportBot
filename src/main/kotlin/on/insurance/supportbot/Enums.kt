@@ -12,6 +12,10 @@ enum class BotStep {
 enum class MessageType{
     DOCUMENT,
     TEXT,
+    AUDIO,
+    VIDEO,
+    VOICE,
+    PHOTO,
 }
 
 enum class Language(
