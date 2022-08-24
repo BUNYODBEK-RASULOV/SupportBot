@@ -58,10 +58,17 @@ class Group(
     var ball:Int=0,
 ) : BaseEntity()
 
-@Entity
+ @Entity
 class Operator(
+     var languages: Int,
     var name: String,
     var phoneNumber: String,
+) : BaseEntity()
+
+@Entity
+class LanguageEntity(
+    @ManyToMany var operator: List<User>,
+    @Enumerated(EnumType.STRING) var language: Language?,
 ) : BaseEntity()
 
 @Entity

@@ -21,5 +21,5 @@ spring:
     show-sql: true
 
 telegram:
-  botName: '@novaSupportbot'
-  token: '5658902226:AAEtH3fXTzF5yzQkhZyVE4oKX30nw5iCraA'
+  botName: '@insurance_on_bot'
+  token: '5545574868:AAFjT0MeHGZPvxS_QSFQFHzYgorJT2dYdgE'
