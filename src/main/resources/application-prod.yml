@@ -4,9 +4,9 @@ spring:
   datasource:
     driver-class-name: org.postgresql.Driver
     initialization-mode: always
-    url: jdbc:postgresql://localhost:5432/supportBot
-    username: postgres
-    password: 1
+    url: jdbc:postgresql://ec2-44-209-186-51.compute-1.amazonaws.com:5432/d276ibb4ref658
+    username: ouyrubsrdfsjad
+    password: de671384f4ef32953cd2276c36e09d38166368112f75d4eba94bec0b622b608a
   jpa:
     properties:
       hibernate:
